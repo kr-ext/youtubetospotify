@@ -18,11 +18,14 @@
   opacity: 1;
   /* -webkit-transition: opacity 1s ease-in;
   display: ; */
+
+  right: 13px !important;
+  position: fixed !important;
+  top: 13px !important;
+  z-index: 999999 !important;
 }
 .p-d-paradify-dialog-in-youtube-hide {
   opacity: 0;
-  /* -webkit-transition: opacity 1s ease-out;
-  display: ; */
 }
 
 .p-d-arrow {
@@ -152,4 +155,51 @@
 
 .p-d-line-h-22px {
   line-height: 22px;
+}
+
+.p-d-donation-container {
+  text-align: right;
+}
+
+.buy-me-a-coffee {
+  width: 106px;
+  height: auto;
+  opacity: 0.6;
+}
+
+.buy-me-a-coffee:hover {
+  opacity: 0.8;
+}
+
+.p-d-button {
+  background-color: #4299e1 !important;
+  font-family: inherit;
+  font-size: 110%;
+  border-radius: 5px;
+  appearance: auto;
+  -webkit-writing-mode: horizontal-tb !important;
+  text-rendering: auto;
+  text-transform: none;
+  text-indent: 0px;
+  display: inline-block;
+  text-align: center;
+  align-items: flex-start;
+  border: none 0;
+  padding: 8px 19px;
+  color: white;
+}
+
+.p-d-button:hover {
+  opacity: 1;
+}
+
+.p-d-button-donation {
+  padding: 0;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  outline: none;
 }

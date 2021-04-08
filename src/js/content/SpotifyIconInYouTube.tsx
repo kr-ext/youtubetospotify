@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
+import root from 'react-shadow';
 import axios from 'axios';
 import { Service } from 'axios-middleware';
 import spotifyImageUrl from '../../img/spotify.png';
@@ -24,6 +25,7 @@ import {
 import { Dialog, Token } from '../interfaces';
 
 import { SpotifyOption } from '../enums';
+import style from './content.shadowcss';
 import './content.css';
 
 const {
@@ -104,6 +106,7 @@ const SpotifyIconInYouTube: FC = () => {
   };
 
   const showDonationDialog = () => {
+    return;
     const dialog: Dialog = {
       behavior: { autoHide: false },
       message: {
@@ -133,6 +136,7 @@ const SpotifyIconInYouTube: FC = () => {
 
     const dialog: Dialog = {
       behavior: { autoHide: true },
+      showDonation: true,
       message: {
         title,
         text,
@@ -477,6 +481,17 @@ const SpotifyIconInYouTube: FC = () => {
     }
   };
 
+  const onClick = () => {
+    const trackInfo = paradify.getTrackInfo(location.href);
+    const query = getSearchTextFromTrackInfo(trackInfo.track);
+    if (query.length === 0) {
+      showNoTitle();
+      return;
+    } else {
+      onClickSpotifyIcon(query);
+    }
+  };
+
   useEffect(() => {
     interceptAxios();
     chrome.runtime.onMessage.addListener(function (
@@ -484,8 +499,10 @@ const SpotifyIconInYouTube: FC = () => {
       sender,
       sendResponse,
     ) {
-      if (event.type == 'dialogAddAll') {
+      if (event.type === 'dialogAddAll') {
         addAll(event.data);
+      } else if (event.type === 'onShortcutKeyPress') {
+        onClick();
       }
     });
   }, []);
@@ -495,39 +512,34 @@ const SpotifyIconInYouTube: FC = () => {
       <button
         id="paradify"
         className="spotify-button-in-yt-player playerButton ytp-button"
-        onClick={() => {
-          const trackInfo = paradify.getTrackInfo(location.href);
-          const query = getSearchTextFromTrackInfo(trackInfo.track);
-          if (query.length === 0) {
-            showNoTitle();
-            return;
-          } else {
-            onClickSpotifyIcon(query);
-          }
-        }}
+        onClick={onClick}
         disabled={isSaving}
         draggable="false"
         title="Add to Spotify"
       >
-        <div className="div-spotify-icon">
-          {isSaving ? (
-            <img
-              src={chrome.runtime.getURL(loading)}
-              width="100%"
-              height="100%"
-              title="Saving"
-              className="img-spotify-icon"
-            />
-          ) : (
-            <img
-              src={chrome.runtime.getURL(spotifyImageUrl)}
-              width="100%"
-              height="100%"
-              title="Add to Spotify"
-              className="img-spotify-icon"
-            />
-          )}
-        </div>
+        <root.div className="shadowRoot">
+          <style type="text/css">{style}</style>
+
+          <div className="div-spotify-icon">
+            {isSaving ? (
+              <img
+                src={chrome.runtime.getURL(loading)}
+                width="100%"
+                height="100%"
+                title="Saving"
+                className="img-spotify-icon"
+              />
+            ) : (
+              <img
+                src={chrome.runtime.getURL(spotifyImageUrl)}
+                width="100%"
+                height="100%"
+                title="Add to Spotify"
+                className="img-spotify-icon"
+              />
+            )}
+          </div>
+        </root.div>
       </button>
     </>
   );

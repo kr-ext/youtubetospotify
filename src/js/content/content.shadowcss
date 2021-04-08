@@ -1,0 +1,18 @@
+.div-spotify-icon {
+  position: relative;
+  height: 100%;
+  top: 0px;
+  bottom: 0px;
+  display: block;
+  margin: auto;
+  width: 100%;
+}
+
+.img-spotify-icon {
+  position: absolute;
+  top: 23%;
+  left: 23%;
+  width: 60%;
+  height: 60%;
+}
+

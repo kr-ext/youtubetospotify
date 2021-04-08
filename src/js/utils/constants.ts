@@ -13,6 +13,7 @@ const URLS = {
   ADD_TRACKS_PATH: 'api/tracks',
   REFRESH_PATH: 'api/refresh-token',
   DONATION_PAYPAL: 'https://www.patreon.com/volkanakin',
+  DONATION_BUY_ME_A_COFFEE: 'https://www.buymeacoffee.com/volkanakin',
 };
 
 const getRedirectAuthUrl = (): string =>

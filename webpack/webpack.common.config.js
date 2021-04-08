@@ -1,11 +1,9 @@
 const path = require('path');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const WriteFilePlugin = require('write-file-webpack-plugin');
-const fileSystem = require('fs');
 
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
 //   .BundleAnalyzerPlugin;
@@ -21,18 +19,6 @@ var fileExtensions = [
   'woff',
   'woff2',
 ];
-
-// // load the secrets
-// var alias = {};
-
-// var secretsPath = path.join(
-//   __dirname,
-//   'secrets.' + process.env.NODE_ENV + '.js',
-// );
-
-// if (fileSystem.existsSync(secretsPath)) {
-//   alias['secrets'] = secretsPath;
-// }
 
 const output = {
   filename: '[name].js',
@@ -52,11 +38,20 @@ const config = {
       {
         test: /\.css$/,
         exclude: /node_modules/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
+        use: [
+          { loader: 'style-loader', options: { injectType: 'styleTag' } },
+          'css-loader',
+          'postcss-loader',
+        ],
+      },
+      {
+        test: /\.shadowcss$/,
+        exclude: /node_modules/,
+        use: ['to-string-loader', 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.(jpg|jpeg|png|gif|)$/,
-        use: 'file-loader?name=[name].[ext]',
+        use: 'file-loader?name=media/[name].[ext]',
       },
       {
         test: /\.html$/,
@@ -81,10 +76,6 @@ const config = {
     // expose and write the allowed env vars on the compiled bundle
     new ProgressBarPlugin(),
     new CleanWebpackPlugin(),
-    new MiniCssExtractPlugin({
-      filename: '[name].bundle.css',
-      chunkFilename: '[id].bundle.css',
-    }),
 
     new HtmlWebpackPlugin({
       template: path.join(__dirname, '..', 'src', 'popup.html'),

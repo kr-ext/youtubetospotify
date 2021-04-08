@@ -1,3 +1,15 @@
+.shadowRoot {
+  width: 100%;
+  height: 100%;
+}
+
+.spotify-button-in-yt-player {
+  padding: '0';
+  border: 'none';
+  background-color: 'transparent';
+  cursor: 'pointer';
+}
+
 .paradify-container-in-youtube {
   display: none;
 }
@@ -21,29 +33,4 @@
 
 .paradify-container-in-youtube-absolute:hover {
   transform: scale(1.1);
-}
-
-.div-spotify-icon {
-  position: relative;
-  height: 100%;
-  top: 0px;
-  bottom: 0px;
-  display: block;
-  margin: auto;
-  width: 100%;
-}
-
-.img-spotify-icon {
-  position: absolute;
-  top: 23%;
-  left: 23%;
-  width: 60%;
-  height: 60%;
-}
-
-.spotify-button-in-yt-player {
-  padding: '0';
-  border: 'none';
-  background-color: 'transparent';
-  cursor: 'pointer';
 }

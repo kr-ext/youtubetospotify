@@ -7,8 +7,9 @@ import {
   URLS,
   ENVIRONMENTS,
 } from './utils/constants';
-import { storageUtil } from './utils';
+import { getRandomSuccessGif, storageUtil } from './utils';
 import { SpotifyOption } from './enums';
+import { Dialog } from './interfaces';
 
 const { BASE_URL } = URLS;
 
@@ -58,6 +59,34 @@ const gaSendEvent = (data: any) => {
 
 const onTokenCompleted = (token: any) => {
   storageUtil.setSpotifyToken(token);
+
+  const dialog: Dialog = {
+    behavior: { autoHide: true },
+    message: {
+      title: 'Login Successful',
+      text: 'You have logged in successfully',
+      image: { url: getRandomSuccessGif() },
+    },
+  };
+
+  chrome.tabs.query(
+    {
+      url: '*://*.youtube.com/*',
+    },
+    function (tabs) {
+      tabs.forEach((tab) => {
+        sendMessageToContentScript(tab.id, {
+          data: dialog,
+          type: 'showDialog',
+        });
+      });
+    },
+  );
+
+  sendMessageToRuntime({
+    data: dialog,
+    type: 'showDialog',
+  });
 };
 
 function setBadgeText(text: any) {
@@ -71,13 +100,17 @@ function clearBadge() {
   chrome.browserAction.setBadgeText({ text: '' });
 }
 
+const sendMessageToContentScript = (tabId: number, message: any) => {
+  chrome.tabs.sendMessage(tabId, { ...message });
+};
+
+const sendMessageToRuntime = (message: any) => {
+  chrome.runtime.sendMessage({ ...message });
+};
+
 function showDialog(message: any) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(
-      tabs[0].id,
-      { ...message, type: 'showDialog' },
-      function (response) {},
-    );
+    sendMessageToContentScript(tabs[0].id, { ...message, type: 'showDialog' });
   });
 }
 
@@ -123,8 +156,28 @@ const messageListener = (event: any, serder: any, callback: any) => {
     case 'dialogAddAll':
       dialogAddAll(event.data);
       break;
+    case 'openTab':
+      openTab(event.data.url);
+      break;
+    case 'buyMeACoffeeClicked':
+      gaSendEvent(event.data);
+      break;
   }
 };
+
+const refreshPage = () => {
+  chrome.tabs.query(
+    {
+      url: '*://*.youtube.com/*',
+    },
+    function (tabs) {
+      tabs.forEach((tab) => {
+        chrome.tabs.update(tab.id, { url: tab.url });
+      });
+    },
+  );
+};
+
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   messageListener(message, sender, sendResponse);
 });
@@ -151,6 +204,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
       eventAction: 'Extension Installed',
       eventLabel: '',
     });
+    refreshPage();
   } else if (details.reason == 'update') {
     storageUtil.setStorage(DEPLOYMENT_VERSION, 1);
     gaSendEvent({
@@ -158,6 +212,17 @@ chrome.runtime.onInstalled.addListener(function (details) {
       eventCategory: 'Extension',
       eventAction: 'Extension Updated',
       eventLabel: '',
+    });
+    refreshPage();
+  }
+});
+
+chrome.commands.onCommand.addListener(function (command) {
+  console.log('Command:', command);
+  if (command === 'add-to-spotify') {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      console.log('active tab:', tabs[0].id);
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'onShortcutKeyPress' });
     });
   }
 });

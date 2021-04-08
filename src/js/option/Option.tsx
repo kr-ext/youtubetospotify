@@ -4,6 +4,7 @@ import { SpotifyOption } from '../enums';
 import { Dialog, Token } from '../interfaces';
 import { getRandomInstalledGif, storageUtil } from '../utils';
 import '../../css/index.css';
+import './option.css';
 import paradifyLogo from '../../img/paradify_logo.png';
 import questionMark from '../../img/question_mark.png';
 import ModalDialogInYouTube from '../content/dialog/ModalDialogInYouTube';
@@ -11,7 +12,9 @@ import ReactGA from 'react-ga';
 import { initializeReactGA } from '../utils';
 import GithubCorner from 'react-github-corner';
 import launch from '../../img/launch.png';
+import coffee from '../../img/buy-me-a-coffee.png';
 import { URLS } from '../utils/constants';
+
 const Option: FC = () => {
   const [tokenState, setTokenState] = useState<Token>(null);
   const [spotifyOptionState, setSpotifyOptionState] = useState(null);
@@ -315,19 +318,21 @@ const Option: FC = () => {
             </li>
             <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
               <div>
-                We need your Love, we need your support.{' '}
                 <button
                   onClick={() => {
-                    window.location.href = URLS.DONATION_PAYPAL;
+                    window.location.href = URLS.DONATION_BUY_ME_A_COFFEE;
                     ReactGA.event({
                       category: 'Options',
-                      action: 'Donate Us Clicked',
+                      action: 'Buy Me a Coffe Clicked',
                       label: '',
                     });
                   }}
                 >
-                  <div className="flex items-baseline underline">
-                    Please Donate to Us
+                  <div className="flex items-baseline">
+                    <img
+                      src={chrome.runtime.getURL(coffee)}
+                      className="buy-me-a-coffee"
+                    />
                   </div>
                 </button>
               </div>

@@ -26,6 +26,7 @@ interface Dialog {
   behavior: DialogBehavior;
   message: DialogMessage;
   confirmation?: DialogConfirmation;
+  showDonation?: boolean;
 }
 
 export { Token, Dialog, DialogBehavior, DialogMessage };

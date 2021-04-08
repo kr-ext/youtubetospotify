@@ -1,30 +1,16 @@
 import React, { FC, useEffect, useState } from 'react';
+import root from 'react-shadow';
 import classNames from 'classnames';
 import paradifyLogo from '../../../img/paradify_logo.png';
 import dialogClose from '../../../img/dialog_close.png';
+import coffee from '../../../img/buy-me-a-coffee.png';
 import { Dialog, DialogBehavior } from '../../interfaces';
-import { TIMEOUT_MS } from '../../utils/constants';
-import './dialog.css';
+import { TIMEOUT_MS, URLS } from '../../utils/constants';
+import style from './dialog.shadowcss';
 
 const ModalDialogInYouTube: FC = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
-
-  // const onMouseOver = () => {
-  //   console.log('over');
-  //   clearTimeout(timeoutInterval);
-  //   setTimeoutInterval(null);
-  //   setShowDialog(true);
-  // };
-
-  // const onMouseOut = () => {
-  //   console.log('out');
-  //   clearTimeout(timeoutInterval);
-  //   const timeout = setTimeout(() => {
-  //     setShowDialog(false);
-  //   }, 4000);
-  //   setTimeoutInterval(timeout);
-  // };
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -78,89 +64,128 @@ const ModalDialogInYouTube: FC = () => {
 
   return (
     <>
-      {showDialog && (
-        <div
-          className={classNames(
-            { 'p-d-paradify-dialog-in-youtube-show': showDialog },
-            { 'p-d-paradify-dialog-in-youtube-hide': !showDialog },
-          )}
-        >
-          {dialog && dialog.message && (
-            <>
-              <div
-                className={classNames(
-                  'p-d-paradify-dialog-in-youtube-inner',
-                  'p-d-mx-auto p-d-px-4 p-d-py-4',
-                )}
-              >
-                <div className="p-d-flex p-d-items-center p-d-mx-auto p-d-justify-between">
-                  <div className="p-d-flex p-d-items-center">
-                    <img
-                      src={chrome.runtime.getURL(paradifyLogo)}
-                      height="20"
-                      width="29"
-                      className="p-d-ml-1"
-                    />
-                    <div className="p-d-ml-4 p-d-text-2xl">
-                      {dialog.message.title}
-                    </div>
-                  </div>
-                  <div>{renderClose(dialog.behavior)}</div>
-                </div>
-              </div>
-
-              {dialog.message.image && (
+      <root.div className="quote">
+        <style type="text/css">{style}</style>
+        {showDialog && (
+          <div
+            className={classNames(
+              { 'p-d-paradify-dialog-in-youtube-show': showDialog },
+              { 'p-d-paradify-dialog-in-youtube-hide': !showDialog },
+            )}
+          >
+            {dialog && dialog.message && (
+              <>
                 <div
                   className={classNames(
                     'p-d-paradify-dialog-in-youtube-inner',
                     'p-d-mx-auto p-d-px-4 p-d-py-4',
-                    'p-d-items-center p-d-py-2 p-d-text-xl p-d-text-center p-d-mt-5',
                   )}
                 >
-                  <img className="p-d-w-full" src={dialog.message.image.url} />
+                  <div className="p-d-flex p-d-items-center p-d-mx-auto p-d-justify-between">
+                    <div className="p-d-flex p-d-items-center">
+                      <img
+                        src={chrome.runtime.getURL(paradifyLogo)}
+                        height="20"
+                        width="29"
+                        className="p-d-ml-1"
+                      />
+                      <div className="p-d-ml-4 p-d-text-2xl">
+                        {dialog.message.title}
+                      </div>
+                    </div>
+                    <div>{renderClose(dialog.behavior)}</div>
+                  </div>
                 </div>
-              )}
-              <div
-                className={classNames(
-                  'p-d-paradify-dialog-in-youtube-inner',
-                  'p-d-mx-auto p-d-px-4 p-d-py-4',
-                  'p-d-items-center p-d-py-2 p-d-text-xl p-d-line-h-22px p-d-text-center p-d-mt-5',
+
+                {dialog.message.image && (
+                  <div
+                    className={classNames(
+                      'p-d-paradify-dialog-in-youtube-inner',
+                      'p-d-mx-auto p-d-px-4 p-d-py-4',
+                      'p-d-items-center p-d-py-2 p-d-text-xl p-d-text-center p-d-mt-5',
+                    )}
+                  >
+                    <img
+                      className="p-d-w-full"
+                      src={dialog.message.image.url}
+                    />
+                  </div>
                 )}
-              >
-                {dialog.message.text && dialog.message.text}
-                {dialog.message.link && (
-                  <>
-                    <div className="p-d-mt-5">
-                      <a
-                        href={dialog.message.link.href}
-                        className="p-d-link"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {dialog.message.link.text}
-                      </a>
-                    </div>
-                  </>
+                <div
+                  className={classNames(
+                    'p-d-paradify-dialog-in-youtube-inner',
+                    'p-d-mx-auto p-d-px-4 p-d-py-4',
+                    'p-d-items-center p-d-py-2 p-d-text-2xl p-d-line-h-22px p-d-text-center p-d-mt-5',
+                  )}
+                >
+                  {dialog.message.text && dialog.message.text}
+                  {dialog.message.link && (
+                    <>
+                      <div className="p-d-mt-5">
+                        <button
+                          className="p-d-button"
+                          onClick={() => {
+                            chrome.runtime.sendMessage({
+                              type: 'openTab',
+                              data: { url: dialog.message.link.href },
+                            });
+                          }}
+                        >
+                          {dialog.message.link.text}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {dialog.confirmation && (
+                    <>
+                      <div>{dialog.confirmation.text}</div>
+                      <div>
+                        {' '}
+                        <button
+                          className="p-d-mt-5"
+                          onClick={() => addAll(dialog.confirmation.data)}
+                        >
+                          Add All
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+                {dialog.showDonation && (
+                  <div
+                    className={classNames('p-d-donation-container', 'p-d-mt-5')}
+                  >
+                    <button
+                      className="p-d-button-donation"
+                      onClick={() => {
+                        chrome.runtime.sendMessage({
+                          type: 'openTab',
+                          data: { url: URLS.DONATION_BUY_ME_A_COFFEE },
+                        });
+
+                        //GA
+                        chrome.runtime.sendMessage({
+                          type: 'buyMeACoffeeClicked',
+                          data: {
+                            pageName: 'YouTube',
+                            eventCategory: 'Donation',
+                            eventAction: 'Buy Me A Coffee Clicked',
+                          },
+                        });
+                      }}
+                    >
+                      <img
+                        src={chrome.runtime.getURL(coffee)}
+                        className="buy-me-a-coffee"
+                      />
+                    </button>
+                  </div>
                 )}
-                {dialog.confirmation && (
-                  <>
-                    <div>{dialog.confirmation.text}</div>
-                    <div>
-                      {' '}
-                      <button
-                        className="p-d-mt-5"
-                        onClick={() => addAll(dialog.confirmation.data)}
-                      >
-                        Add All
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+              </>
+            )}
+          </div>
+        )}
+      </root.div>
     </>
   );
 };

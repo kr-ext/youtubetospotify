@@ -78,7 +78,7 @@ const onLoad = () => {
     contentUtil.youTubeTitle(() => {
       loadInjection();
     });
-  }, 2000);
+  }, 500);
 };
 
 window.addEventListener('load', onLoad, false);
