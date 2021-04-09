@@ -169,7 +169,7 @@ const SpotifyIconInYouTube: FC = () => {
         image: { url: getRandomFailedGif() },
         link: {
           href: getSpotifySearchUrl(q),
-          text: 'Open and search on Spotify',
+          text: 'Search on Spotify page instead',
         },
       },
     };
