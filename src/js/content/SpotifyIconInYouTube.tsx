@@ -1,5 +1,4 @@
 import React, { FC, useEffect, useState } from 'react';
-import root from 'react-shadow';
 import axios from 'axios';
 import { Service } from 'axios-middleware';
 import spotifyImageUrl from '../../img/spotify.png';
@@ -25,7 +24,6 @@ import {
 import { Dialog, Token } from '../interfaces';
 
 import { SpotifyOption } from '../enums';
-import style from './content.shadowcss';
 import './content.css';
 
 const {
@@ -517,29 +515,25 @@ const SpotifyIconInYouTube: FC = () => {
         draggable="false"
         title="Add to Spotify"
       >
-        <root.div className="shadowRoot">
-          <style type="text/css">{style}</style>
-
-          <div className="div-spotify-icon">
-            {isSaving ? (
-              <img
-                src={chrome.runtime.getURL(loading)}
-                width="100%"
-                height="100%"
-                title="Saving"
-                className="img-spotify-icon"
-              />
-            ) : (
-              <img
-                src={chrome.runtime.getURL(spotifyImageUrl)}
-                width="100%"
-                height="100%"
-                title="Add to Spotify"
-                className="img-spotify-icon"
-              />
-            )}
-          </div>
-        </root.div>
+        <div className="div-spotify-icon">
+          {isSaving ? (
+            <img
+              src={chrome.runtime.getURL(loading)}
+              width="100%"
+              height="100%"
+              title="Saving"
+              className="img-spotify-icon"
+            />
+          ) : (
+            <img
+              src={chrome.runtime.getURL(spotifyImageUrl)}
+              width="100%"
+              height="100%"
+              title="Add to Spotify"
+              className="img-spotify-icon"
+            />
+          )}
+        </div>
       </button>
     </>
   );

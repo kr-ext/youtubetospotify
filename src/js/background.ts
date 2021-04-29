@@ -162,6 +162,10 @@ const messageListener = (event: any, serder: any, callback: any) => {
     case 'buyMeACoffeeClicked':
       gaSendEvent(event.data);
       break;
+    case 'spotifyIconCannotloadedInYTPlayer':
+    case 'spotifyIconCannotloadedInBody':
+      gaSendEvent(event.data);
+      break;
   }
 };
 

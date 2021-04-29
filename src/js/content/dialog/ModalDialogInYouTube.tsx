@@ -142,7 +142,7 @@ const ModalDialogInYouTube: FC = () => {
                       <div>
                         {' '}
                         <button
-                          className="p-d-mt-5"
+                          className="p-d-mt-5 p-d-button"
                           onClick={() => addAll(dialog.confirmation.data)}
                         >
                           Add All

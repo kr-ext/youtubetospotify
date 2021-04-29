@@ -50,7 +50,11 @@ const config = {
         use: ['to-string-loader', 'css-loader', 'postcss-loader'],
       },
       {
-        test: /\.(jpg|jpeg|png|gif|)$/,
+        test: /\.svg$/,
+        use: ['@svgr/webpack', 'url-loader'],
+      },
+      {
+        test: /\.(jpg|jpeg|png|gif)$/,
         use: 'file-loader?name=media/[name].[ext]',
       },
       {
@@ -63,10 +67,6 @@ const config = {
         loader: 'ts-loader',
         exclude: /node_modules/,
       },
-      {
-        test: /\.svg$/,
-        use: ['@svgr/webpack', 'url-loader'],
-      },
     ],
   },
   resolve: {
@@ -76,12 +76,6 @@ const config = {
     // expose and write the allowed env vars on the compiled bundle
     new ProgressBarPlugin(),
     new CleanWebpackPlugin(),
-
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, '..', 'src', 'popup.html'),
-      filename: 'popup.html',
-      chunks: ['popup'],
-    }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, '..', 'src', 'options.html'),
       filename: 'options.html',

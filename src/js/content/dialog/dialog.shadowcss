@@ -187,6 +187,7 @@
   border: none 0;
   padding: 8px 19px;
   color: white;
+  width: 100%;
 }
 
 .p-d-button:hover {
