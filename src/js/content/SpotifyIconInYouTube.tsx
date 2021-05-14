@@ -8,33 +8,56 @@ import {
   getSearchTextFromTrackInfo,
   getSpotifySearchUrl,
   storageUtil,
-  getRandomFailedGif,
-  getRandomSuccessGif,
-  getRandomErrorGif,
-  getRandomDonationGif,
+  dialogUtils,
+  analyticsHelper,
+  consoleLog,
 } from '../utils';
+
 import {
+  addTracksFromPlaylist,
   getAddTracksUrl,
-  getAddTrackUrl,
+  getAutoSearchAndSaveUrl,
   getRefreshUrl,
-  URLS,
-  DONATION_SHOW_SAVED_COUNTS,
-  TIMEOUT_MS,
+  getSearchUrl,
 } from '../utils/constants';
-import { Dialog, Token } from '../interfaces';
-
-import { SpotifyOption } from '../enums';
+import { Token } from '../interfaces';
+import { AudioType, SpotifyOption } from '../enums';
 import './content.css';
+import SearchResult from './dialog/SearchResult';
+import audioDoneUrl from '../../audio/done.mp3';
+import audioFailUrl from '../../audio/fail.mp3';
 
-const {
-  getSpotifyToken,
-  getSpotifyOption,
-  getSavedCount,
-  increaseSavedCount,
-} = storageUtil;
+const { getSpotifyToken, getSpotifyOption } = storageUtil;
 
 const SpotifyIconInYouTube: FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [searchResult, setSearchResult] = useState<any>(null);
+  const [filteredQuery, setFilteredQuery] = useState<string>(null);
+  const [query, setQuery] = useState<string>(null);
+  const [showResultDialog, setShowResultDialog] = useState<boolean>(null);
+
+  const resetStates = (): void => {
+    dialogUtils.hideDialog();
+    setShowResultDialog(false);
+    setSearchResult(null);
+    setFilteredQuery(null);
+    setQuery(null);
+  };
+
+  const playAudio = (audioType: AudioType) => {
+    let audioUrl: string;
+
+    switch (audioType) {
+      case AudioType.SAVED:
+        audioUrl = chrome.runtime.getURL(audioDoneUrl);
+        break;
+      default:
+        audioUrl = chrome.runtime.getURL(audioFailUrl);
+        break;
+    }
+    const audio = new Audio(audioUrl);
+    audio.play();
+  };
 
   const refreshToken = async (response: any) => {
     const token: Token = await getSpotifyToken();
@@ -60,10 +83,12 @@ const SpotifyIconInYouTube: FC = () => {
           return axios.request(response.config);
         } else {
           storageUtil.removeSpotifyToken();
+          analyticsHelper.failedOnRefreshToken();
           return Promise.reject();
         }
       })
       .catch((error: any) => {
+        analyticsHelper.errorOnRefreshToken();
         return Promise.reject(error);
       });
   };
@@ -75,54 +100,41 @@ const SpotifyIconInYouTube: FC = () => {
   };
 
   const interceptAxios = () => {
-    const service = new Service(axios);
+    try {
+      const service = new Service(axios);
 
-    service.register({
-      async onRequest(config: any) {
-        const token: Token = await getSpotifyToken();
-        config.headers['access_token'] = token?.access_token;
-        config.headers['refresh_token'] = token?.refresh_token;
-        config.headers['token_type'] = token?.token_type;
-        return config;
-      },
+      service.register({
+        async onRequest(config: any) {
+          const token: Token = await getSpotifyToken();
+          config.headers['access_token'] = token?.access_token;
+          config.headers['refresh_token'] = token?.refresh_token;
+          config.headers['token_type'] = token?.token_type;
+          return config;
+        },
 
-      async onResponse(response: any) {
-        const { data } = response;
-        let d = null;
-        if (typeof data === 'string') d = JSON.parse(data);
-        else d = data;
+        async onResponse(response: any) {
+          const { data } = response;
+          let d = null;
+          if (typeof data === 'string') d = JSON.parse(data);
+          else d = data;
 
-        if (d.error && d.error.status === 401) {
-          if (d.error.message.indexOf('Invalid access token') > -1) {
-            return openAuth();
-          } else if (d.error.message.indexOf('access token expired') > -1) {
-            return refreshToken(response);
-          }
-        } else return response;
-      },
-    });
-  };
-
-  const showDonationDialog = () => {
-    return;
-    const dialog: Dialog = {
-      behavior: { autoHide: false },
-      message: {
-        title: 'Please Donate to Paradify',
-        text:
-          'We need your love, we need your support to keep Paradify on and effort our costs',
-        image: { url: getRandomDonationGif() },
-        link: { href: URLS.DONATION_PAYPAL, text: 'Please Donate to Paradify' },
-      },
-    };
-
-    chrome.runtime.sendMessage({
-      type: 'showDialog',
-      data: dialog,
-    });
+          if (d.error && d.error.status === 401) {
+            if (d.error.message.indexOf('Invalid access token') > -1) {
+              return openAuth();
+            } else if (d.error.message.indexOf('access token expired') > -1) {
+              return refreshToken(response);
+            }
+          } else return response;
+        },
+      });
+    } catch (error) {
+      analyticsHelper.errorOnInterceptAPI(error.toString());
+      consoleLog({ error });
+    }
   };
 
   const saved = async (trackIds: string[] = [], playlistUrl: string) => {
+    setSearchResult(null);
     let title = '';
     let text = '';
 
@@ -132,50 +144,15 @@ const SpotifyIconInYouTube: FC = () => {
       text = `${trackIds.length} track${s} added into your Spotify playlist`;
     }
 
-    const dialog: Dialog = {
-      behavior: { autoHide: true },
-      showDonation: true,
-      message: {
-        title,
-        text,
-        image: { url: getRandomSuccessGif() },
-        link: { href: playlistUrl, text: 'Open your playlist' },
-      },
-    };
-
-    chrome.runtime.sendMessage({
-      type: 'showDialog',
-      data: dialog,
-    });
-
-    await increaseSavedCount();
-    const savedCount = await getSavedCount();
-
-    if (DONATION_SHOW_SAVED_COUNTS.includes(savedCount)) {
-      setTimeout(() => {
-        showDonationDialog();
-      }, TIMEOUT_MS);
-    }
+    dialogUtils.saved(title, text, playlistUrl);
+    playAudio(AudioType.SAVED);
   };
 
   const notSaved = (q: string = null) => {
-    const dialog: Dialog = {
-      behavior: { autoHide: true },
-      message: {
-        title: 'Not Found',
-        text: `The video was not found in Spotify.`,
-        image: { url: getRandomFailedGif() },
-        link: {
-          href: getSpotifySearchUrl(q),
-          text: 'Search on Spotify page instead',
-        },
-      },
-    };
+    setSearchResult(null);
 
-    chrome.runtime.sendMessage({
-      type: 'showDialog',
-      data: dialog,
-    });
+    dialogUtils.notSaved(q);
+    playAudio(AudioType.NOTSAVED);
   };
 
   const combineTrackNames = (
@@ -194,9 +171,82 @@ const SpotifyIconInYouTube: FC = () => {
     }
   };
 
+  const addTracks = async (ids: string[], type: string): Promise<any> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const url = getAddTracksUrl();
+        const response = await axios.post(url, {
+          ids,
+          type,
+        });
+
+        if (response.data?.message === 'OK') {
+          const { data: dataResponse } = response;
+          const { ids, playlistUrl } = dataResponse;
+          resolve(ids);
+          resetStates();
+          saved(ids, playlistUrl);
+          analyticsHelper.addTracksSuccess(query);
+        } else {
+          reject();
+          resetStates();
+          notSaved();
+          analyticsHelper.addTracksFailed(query);
+        }
+      } catch (error) {
+        setSearchResult(null);
+        resetStates();
+        dialogUtils.errorInGeneral();
+        analyticsHelper.addTracksError(`${query} - ${error.toString()}`);
+        consoleLog({ error });
+        reject();
+      }
+    });
+  };
+
+  const search = async (q: string) => {
+    try {
+      setIsSaving(true);
+      const url = getSearchUrl();
+      const response = await axios.get(url, {
+        params: { q },
+      });
+      const { data } = response;
+      setSearchResult(data);
+      setFilteredQuery(data.filteredQuery);
+      setQuery(q);
+      setShowResultDialog(true);
+      analyticsHelper.searchStarted(q);
+    } catch (error) {
+      setIsSaving(false);
+      dialogUtils.errorInGeneral();
+      analyticsHelper.searchError(`${q} - ${error.toString}`);
+      consoleLog({ error });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const reSearch = async (q: string) => {
+    try {
+      const url = getSearchUrl();
+      const response = await axios.get(url, {
+        params: { q },
+      });
+
+      const { data } = response;
+      setSearchResult(data);
+      analyticsHelper.reSearchStarted(q);
+    } catch (error) {
+      analyticsHelper.reSearchError(`${q} - ${error.toString}`);
+      consoleLog({ error });
+    }
+  };
+
   const searchAndSave = async (q: string) => {
     try {
-      const url = getAddTrackUrl();
+      analyticsHelper.autoSaveStarted(query);
+      const url = getAutoSearchAndSaveUrl();
       setIsSaving(true);
       const response = await axios.post(url, null, {
         params: { q },
@@ -206,15 +256,7 @@ const SpotifyIconInYouTube: FC = () => {
         const { data } = response.data;
         const { trackIds, playlistUrl } = data;
         saved(trackIds, playlistUrl);
-        chrome.runtime.sendMessage({
-          type: 'addIconClicked',
-          data: {
-            pageName: 'YouTube',
-            eventCategory: 'YouTube Video',
-            eventAction: 'Spotify Icon Clicked - AutoSave - Saved',
-            eventLabel: q,
-          },
-        });
+        analyticsHelper.autoSaveSaved(q);
       } else if (response.data?.data?.message === 'CONFIRMATION') {
         const { data } = response.data;
         const { type } = data;
@@ -227,7 +269,7 @@ const SpotifyIconInYouTube: FC = () => {
 
             const confirmationText = `A playlist has been found "${playlistName}" and has ${
               playlist.tracks.total
-            } tracks in it. Do you want to add all ${
+            } tracks in it. Do you want to add ${
               playlist.tracks.total
             } tracks? ${
               trackNameString
@@ -235,106 +277,34 @@ const SpotifyIconInYouTube: FC = () => {
                 : ''
             }`;
 
-            const playlistDialog: Dialog = {
-              behavior: { autoHide: false },
-              message: {
-                title: 'Playlist found',
-              },
-              confirmation: {
-                text: confirmationText,
-                data: playlist,
-                dataType: 'playlist',
-              },
-            };
+            dialogUtils.confirmationDialog(confirmationText, playlist);
 
-            chrome.runtime.sendMessage({
-              type: 'showDialog',
-              data: playlistDialog,
-            });
-
-            //GA
-            chrome.runtime.sendMessage({
-              type: 'addIconClicked',
-              data: {
-                pageName: 'YouTube',
-                eventCategory: 'YouTube Video',
-                eventAction: 'Spotify Icon Clicked - AutoSave - Multi',
-                eventLabel: data.name, //playlist name
-              },
-            });
+            analyticsHelper.autoSavePlaylistConfirmation(data.name);
             break;
-          // case 'album':
-          //   const { album } = data;
-          //   const { name, total_tracks } = album;
-
-          //   const dialog: Dialog = {
-          //     behavior: { autoHide: false },
-          //     message: {
-          //       title: 'Album found',
-          //     },
-          //     confirmation: {
-          //       text: `Found album "${name}". It has ${total_tracks} tracks. Do you want to add all ${total_tracks} tracks?`,
-          //       data: album,
-          //       dataType: 'album',
-          //     },
-          //   };
-
-          //   chrome.runtime.sendMessage({
-          //     type: 'showDialog',
-          //     data: dialog,
-          //   });
-          //   break;
           default:
             notSaved(q);
-            chrome.runtime.sendMessage({
-              type: 'addIconClicked',
-              data: {
-                pageName: 'YouTube',
-                eventCategory: 'YouTube Video',
-                eventAction: 'Spotify Icon Clicked - AutoSave - Not Saved',
-                eventLabel: q,
-              },
-            });
             break;
         }
       } else {
         notSaved(q);
-        chrome.runtime.sendMessage({
-          type: 'addIconClicked',
-          data: {
-            pageName: 'YouTube',
-            eventCategory: 'YouTube Video',
-            eventAction: 'Spotify Icon Clicked - AutoSave - Not Saved',
-            eventLabel: q,
-          },
-        });
+        analyticsHelper.autoSaveNotSaved(q);
       }
-    } catch (err) {
-      const dialog: Dialog = {
-        behavior: { autoHide: true, hideTimeout: 4000 },
-        message: {
-          title: 'Ops!',
-          text: `Something went wrong. Please try again later`,
-          image: { url: getRandomErrorGif() },
-        },
-      };
-
-      chrome.runtime.sendMessage({
-        type: 'showDialog',
-        data: dialog,
-      });
-
-      chrome.runtime.sendMessage({
-        type: 'addIconClicked',
-        data: {
-          pageName: 'YouTube',
-          eventCategory: 'YouTube Video',
-          eventAction: 'Spotify Icon Clicked - AutoSave - Error',
-          eventLabel: q,
-        },
-      });
+    } catch (error) {
+      setIsSaving(false);
+      dialogUtils.errorInGeneral();
+      analyticsHelper.autoSaveError(`${q} - ${error.toString()}`);
+      consoleLog({ error });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const searchStarted = async (query: string) => {
+    const token = await getSpotifyToken();
+    if (token) {
+      search(query);
+    } else {
+      openAuth();
     }
   };
 
@@ -342,35 +312,9 @@ const SpotifyIconInYouTube: FC = () => {
     const token = await getSpotifyToken();
     if (token) {
       searchAndSave(query);
-      chrome.runtime.sendMessage({
-        type: 'addIconClicked',
-        data: {
-          pageName: 'YouTube',
-          eventCategory: 'YouTube Video',
-          eventAction: 'Spotify Icon Clicked - AutoSave',
-          eventLabel: query,
-        },
-      });
     } else {
       openAuth();
-      chrome.runtime.sendMessage({
-        type: 'addIconClicked',
-        data: {
-          pageName: 'YouTube',
-          eventCategory: 'YouTube Video',
-          eventAction: 'Spotify Icon Clicked - AutoSave - Login',
-          eventLabel: query,
-        },
-      });
-      // const tokenAfterFirstLogin = await waitAndGetFirstLoginResponse();
-      // if (tokenAfterFirstLogin) {
-      //   searchAndSave(query);
-      // }
     }
-  };
-
-  const OpenInContentStarted = () => {
-    alert('This functioanality will be coming soon');
   };
 
   const onClickSpotifyIcon = async (query: string) => {
@@ -380,8 +324,8 @@ const SpotifyIconInYouTube: FC = () => {
       case SpotifyOption.AutoSave:
         autoSaveStarted(query);
         break;
-      case SpotifyOption.OpenInContent:
-        OpenInContentStarted();
+      case SpotifyOption.Search:
+        searchStarted(query);
         break;
       default:
         openAndSearchInSpotify(query);
@@ -391,35 +335,16 @@ const SpotifyIconInYouTube: FC = () => {
 
   const openAndSearchInSpotify = (query: string): void => {
     window.open(getSpotifySearchUrl(query), '_blank');
-    chrome.runtime.sendMessage({
-      type: 'addIconClicked',
-      data: {
-        pageName: 'YouTube',
-        eventCategory: 'YouTube Video',
-        eventAction: 'Spotify Icon Clicked - Open&Search',
-        eventLabel: query,
-      },
-    });
+    analyticsHelper.openAndSearchInSpotify(query);
   };
 
   const showNoTitle = () => {
-    const dialog: Dialog = {
-      behavior: { autoHide: true },
-      message: {
-        title: 'Title Not Found',
-        text: `No played song/video clip found.`,
-      },
-    };
-
-    chrome.runtime.sendMessage({
-      type: 'showDialog',
-      data: dialog,
-    });
+    dialogUtils.showNoTitle();
   };
 
   const addAll = async (data: any) => {
     try {
-      const url = getAddTracksUrl();
+      const url = addTracksFromPlaylist();
       setIsSaving(true);
       const response = await axios.post(url, {
         id: data.id,
@@ -429,57 +354,24 @@ const SpotifyIconInYouTube: FC = () => {
         const { data: dataResponse } = response.data;
         const { trackIds, playlistUrl } = dataResponse;
         saved(trackIds, playlistUrl);
-        chrome.runtime.sendMessage({
-          type: 'addIconClicked',
-          data: {
-            pageName: 'YouTube',
-            eventCategory: 'YouTube Video',
-            eventAction: 'Spotify Icon Clicked - AutoSave - Multi - Saved',
-            eventLabel: data.name, //playlist name
-          },
-        });
+        analyticsHelper.autoSavePlaylistSaved(data.name); //playlist name
       } else {
         notSaved();
-        chrome.runtime.sendMessage({
-          type: 'addIconClicked',
-          data: {
-            pageName: 'YouTube',
-            eventCategory: 'YouTube Video',
-            eventAction: 'Spotify Icon Clicked - AutoSave - Multi - Not Saved',
-            eventLabel: data.name, //playlist name
-          },
-        });
+        analyticsHelper.autoSavePlaylistNotSaved(data.name); //playlist name
       }
-    } catch (err) {
-      const dialog: Dialog = {
-        behavior: { autoHide: true, hideTimeout: 4000 },
-        message: {
-          title: 'Ops!',
-          text: `Something went wrong. Please try again later`,
-          image: { url: getRandomErrorGif() },
-        },
-      };
-
-      chrome.runtime.sendMessage({
-        type: 'showDialog',
-        data: dialog,
-      });
-
-      chrome.runtime.sendMessage({
-        type: 'addIconClicked',
-        data: {
-          pageName: 'YouTube',
-          eventCategory: 'YouTube Video',
-          eventAction: 'Spotify Icon Clicked - AutoSave - Multi - Error',
-          eventLabel: data.name,
-        },
-      });
+    } catch (error) {
+      dialogUtils.errorInGeneral();
+      analyticsHelper.autoSavePlaylistError(
+        `${data.name} - ${error.toString()}`,
+      ); //playlist name
+      consoleLog({ error });
     } finally {
       setIsSaving(false);
     }
   };
 
   const onClick = () => {
+    resetStates();
     const trackInfo = paradify.getTrackInfo(location.href);
     const query = getSearchTextFromTrackInfo(trackInfo.track);
     if (query.length === 0) {
@@ -492,14 +384,10 @@ const SpotifyIconInYouTube: FC = () => {
 
   useEffect(() => {
     interceptAxios();
-    chrome.runtime.onMessage.addListener(function (
-      event,
-      sender,
-      sendResponse,
-    ) {
+    chrome.runtime.onMessage.addListener(function (event) {
       if (event.type === 'dialogAddAll') {
         addAll(event.data);
-      } else if (event.type === 'onShortcutKeyPress') {
+      } else if (event.type === 'SpotifyIconClickAction') {
         onClick();
       }
     });
@@ -535,6 +423,21 @@ const SpotifyIconInYouTube: FC = () => {
           )}
         </div>
       </button>
+      <div id="paradify-search-result-container">
+        {showResultDialog && (
+          <SearchResult
+            result={searchResult}
+            addTrack={addTracks}
+            close={() => {
+              setSearchResult(null);
+              setShowResultDialog(false);
+            }}
+            reSearch={reSearch}
+            filteredQuery={filteredQuery}
+            showResultDialog={showResultDialog}
+          />
+        )}
+      </div>
     </>
   );
 };

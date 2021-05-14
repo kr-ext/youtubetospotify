@@ -8,4 +8,9 @@ const DOMAINS = {
   DEVELOPMENT: 'localhost:8080',
 };
 
-module.exports = { ENVIRONMENTS, DOMAINS };
+const WEB_SITE_URL = {
+  PRODUCTION: `https://www.${DOMAINS.PRODUCTION}`,
+  DEVELOPMENT: `http://${DOMAINS.DEVELOPMENT}`,
+};
+
+module.exports = { ENVIRONMENTS, DOMAINS, WEB_SITE_URL };

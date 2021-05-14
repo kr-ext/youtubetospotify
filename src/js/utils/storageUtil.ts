@@ -1,6 +1,8 @@
 import { Token } from '../interfaces';
 import {
+  DEPLOYMENT_VERSION,
   EXTENSION_INSTALLED,
+  OPTION_HIGHLIGHTED,
   SAVED_COUNT,
   SPOTIFY_ICON_CLICK_ACTION_OPTION,
   SPOTIFY_TOKEN,
@@ -35,10 +37,16 @@ const setSpotifyToken = async (token: Token): Promise<void> =>
 const getSpotifyOption = async (): Promise<string> =>
   await getStorage(SPOTIFY_ICON_CLICK_ACTION_OPTION);
 
+const getOptionHighlightedVersion = async (): Promise<number> =>
+  await getStorage(OPTION_HIGHLIGHTED);
+
+const setOptionHighlightedVersion = async (): Promise<void> => {
+  await setStorage(OPTION_HIGHLIGHTED, DEPLOYMENT_VERSION);
+};
+
 const getSavedCount = async (): Promise<number> => {
   try {
     const count = await getStorage(SAVED_COUNT);
-    console.log({ count });
 
     return count ?? 0;
   } catch {
@@ -110,6 +118,8 @@ const storageUtil = {
   setStorage,
   isInstalled,
   setIsInstalled,
+  getOptionHighlightedVersion,
+  setOptionHighlightedVersion,
 };
 
 export default storageUtil;

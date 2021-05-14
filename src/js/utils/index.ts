@@ -1,5 +1,7 @@
 import contentUtil from './contentUtil';
 import storageUtil from './storageUtil';
+import dialogUtils from './dialogUtils';
+import analyticsHelper from './analyticsHelper';
 import { ENVIRONMENTS } from './constants';
 
 const initializeReactGA = (ReactGA: any, pageName: string) => {
@@ -14,6 +16,12 @@ const initializeReactGA = (ReactGA: any, pageName: string) => {
     category: 'On Site',
     action: `${pageName} page load`,
   });
+};
+
+const consoleLog = (data: any): void => {
+  console.log('%c----------------Paradify----------------', 'color:green');
+  console.log(data);
+  console.log('%c----------------Paradify----------------', 'color:green');
 };
 
 function getPageName(url: string): string {
@@ -69,9 +77,10 @@ const paradify = {
         response.success = false;
         response.errMessage = 'No track info';
       }
-    } catch (err) {
+    } catch (error) {
       response.success = false;
-      response.errMessage = err.message;
+      response.errMessage = error.message;
+      consoleLog({ error });
     }
 
     response.pageName = pageName;
@@ -92,31 +101,8 @@ const getSearchTextFromTrackInfo = (trackInfo: any): string => {
   return q.trim();
 };
 
-const wordsToRemove = [
-  ' feat ',
-  ' feat. ',
-  ' ft ',
-  ' ft. ',
-  '&',
-  ' x ',
-  ' - ',
-  '?',
-  '|',
-  '!',
-];
-
-const filterQuery = (query: string): string => {
-  wordsToRemove.forEach((value) => {
-    query = query.toLowerCase().replace(value, ' ');
-  });
-
-  query = query.replace(/(\(|\[)[^\]]*(\)|\])/g, '');
-
-  return query;
-};
-
-const getSpotifySearchUrl = (query: any): string => {
-  return `https://open.spotify.com/search/${filterQuery(query)}`;
+const getSpotifySearchUrl = (query: string): string => {
+  return `https://open.spotify.com/search/${encodeURIComponent(query)}`;
 };
 
 const getRandomSuccessGif = (): string => {
@@ -174,9 +160,12 @@ export {
   getSpotifySearchUrl,
   contentUtil,
   storageUtil,
+  dialogUtils,
   getRandomSuccessGif,
   getRandomFailedGif,
   getRandomInstalledGif,
   getRandomErrorGif,
   getRandomDonationGif,
+  analyticsHelper,
+  consoleLog,
 };

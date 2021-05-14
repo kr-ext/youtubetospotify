@@ -1,5 +1,10 @@
 export enum SpotifyOption {
   OpenNewTab = 'OpenNewTab',
-  OpenInContent = 'OpenInContent',
   AutoSave = 'AutoSave',
+  Search = 'Search',
+}
+
+export enum AudioType {
+  SAVED = 'saved',
+  NOTSAVED = 'failed',
 }

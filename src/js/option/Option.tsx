@@ -1,25 +1,27 @@
 import React, { FC, useEffect, useState } from 'react';
 import { render } from 'react-dom';
 import { SpotifyOption } from '../enums';
-import { Dialog, Token } from '../interfaces';
-import { getRandomInstalledGif, storageUtil } from '../utils';
+import { Token } from '../interfaces';
+import { dialogUtils, storageUtil } from '../utils';
 import '../../css/index.css';
 import './option.css';
 import paradifyLogo from '../../img/paradify_logo.png';
-import questionMark from '../../img/question_mark.png';
+import spotifyImageUrl from '../../img/spotify.png';
 import ModalDialogInYouTube from '../content/dialog/ModalDialogInYouTube';
 import ReactGA from 'react-ga';
 import { initializeReactGA } from '../utils';
-import GithubCorner from 'react-github-corner';
 import launch from '../../img/launch.png';
 import coffee from '../../img/buy-me-a-coffee.png';
-import { URLS } from '../utils/constants';
+import { DEPLOYMENT_VERSION, URLS } from '../utils/constants';
+import classNames from 'classnames';
 
 const Option: FC = () => {
   const [tokenState, setTokenState] = useState<Token>(null);
   const [spotifyOptionState, setSpotifyOptionState] = useState(null);
-  const [tooltipLogin, setTooltipLogin] = useState(false);
-  const [tooltipHowAutoSaveWork, setTooltipHowAutoSaveWork] = useState(false);
+  const [
+    tempOutlineForDefaultOption,
+    setTempOutlineForDefaultOption,
+  ] = useState(false);
 
   const loadStorageAndUpdateStates = async () => {
     const spotifyTokenData = await storageUtil.getSpotifyToken();
@@ -28,25 +30,22 @@ const Option: FC = () => {
 
     const spotifyOption: string = await storageUtil.getSpotifyOption();
     setSpotifyOptionState(spotifyOption);
+
+    const optionDefaultOutlined: number = await storageUtil.getOptionHighlightedVersion();
+    if (!optionDefaultOutlined || optionDefaultOutlined < DEPLOYMENT_VERSION) {
+      setTempOutlineForDefaultOption(true);
+      setTimeout(() => {
+        setTempOutlineForDefaultOption(false);
+        storageUtil.setOptionHighlightedVersion();
+      }, 12000);
+    }
   };
 
   const loadWelcomeMessage = async () => {
     const installed = await storageUtil.isInstalled();
 
     if (!installed) {
-      const dialog: Dialog = {
-        behavior: { autoHide: true, hideTimeout: 6000 },
-        message: {
-          title: 'You made it!',
-          text: 'Enjoy using Paradify',
-          image: { url: getRandomInstalledGif() },
-        },
-      };
-
-      chrome.runtime.sendMessage({
-        type: 'showDialog',
-        data: dialog,
-      });
+      dialogUtils.welcome();
       storageUtil.setIsInstalled();
     }
   };
@@ -92,126 +91,137 @@ const Option: FC = () => {
   const renderLoginContainer = () => {
     return (
       <>
-        {tokenState && tokenState.access_token && (
-          <div>
-            You are logged in.{' '}
-            <button className="underline" onClick={() => logoutSpotify()}>
-              Logout
-            </button>
-          </div>
-        )}
-        {(!tokenState || !tokenState.access_token) && (
-          <div>
-            You are not logged in.{' '}
-            <button className="underline" onClick={() => loginSpotify()}>
-              Login
-            </button>
-          </div>
-        )}
+        <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
+          {tokenState && tokenState.access_token && (
+            <div>You are logged in</div>
+          )}
+          {(!tokenState || !tokenState.access_token) && (
+            <div>You are not logged in</div>
+          )}
+        </li>
+        <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
+          {tokenState && tokenState.access_token && (
+            <div>
+              <button className="underline" onClick={() => logoutSpotify()}>
+                Logout
+              </button>
+            </div>
+          )}
+          {(!tokenState || !tokenState.access_token) && (
+            <div>
+              <button className="underline flex" onClick={() => loginSpotify()}>
+                Login with Spotify{' '}
+                <img
+                  src={chrome.runtime.getURL(spotifyImageUrl)}
+                  width="20"
+                  height="20"
+                  title="Login with Spotify"
+                  className="ml-1 img-spotify-icon"
+                />
+              </button>
+            </div>
+          )}
+        </li>
       </>
+    );
+  };
+
+  const renderInputLabel = (htmlFor: string, text: string) => {
+    return (
+      <label htmlFor={htmlFor}>
+        <span className="font-bold">{text}</span>
+      </label>
     );
   };
 
   const renderSpotifyIconActionClick_Option = () => {
     return (
       <>
-        <div>
-          <input
-            type="radio"
-            id="AutoSave"
-            name="SpotifyOption"
-            value="AutoSave"
-            checked={spotifyOptionState === SpotifyOption.AutoSave}
-            onChange={() => saveOption(SpotifyOption.AutoSave)}
-            className="mr-2"
-          />
-          <label htmlFor="AutoSave">
-            Auto Save (Recommended){' '}
-            <div className="mt-2 text-gray-700">
-              <p>
-                Paradify adds tracks from YouTube to your Spotify playlist. So
-                you can listen to it later. For this option you need to login in
-                Spotify.
-                <button
-                  className="ml-2 underline"
-                  onClick={() => {
-                    setTooltipLogin(!tooltipLogin);
-                    ReactGA.event({
-                      category: 'Options',
-                      action: 'Why Login Clicked',
-                      label: '',
-                    });
-                  }}
-                >
-                  <img
-                    src={questionMark}
-                    alt="Why do I need to login?"
-                    title="Why do I need to login?"
-                    className="h-4 mr-1 inline"
-                  />
-                  Why login?
-                </button>
-                <button
-                  className="ml-2"
-                  onClick={() => {
-                    setTooltipHowAutoSaveWork(!tooltipHowAutoSaveWork);
-                    ReactGA.event({
-                      category: 'Options',
-                      action: 'How Does It Work Clicked',
-                      label: '',
-                    });
-                  }}
-                >
-                  <div className="flex items-baseline underline">
-                    How does it work?
-                  </div>
-                </button>
-              </p>
-              <p className=" mt-2 text-red-900">
-                Be aware that Paradify cannot always find the tracks on Spotify
-                due to the title of YouTube video. We do our best to filter and
-                clean it before searching on Spotify.
-              </p>
-            </div>
-            {tooltipLogin && (
-              <>
-                <div className="text-xs mt-2 ml-2">
-                  You need to allow Paradify to add tracks into your playlist on
-                  behalf of you. Note: Paradify does NOT collect any information
-                  from your Spotify account. You can always remove the
-                  permission under {'"Profile > Account > App"'}.
-                </div>
-              </>
-            )}
-            {tooltipHowAutoSaveWork && (
-              <>
-                <p className="text-xs mt-2 text-gray-700 ml-2">
-                  Open a YouTube video. Click on the Spotify icon and the track
-                  is added to your playlist immediately. Only the first time you
-                  need to login and allow Paradify to add tracks into your
-                  playlist on behalf of you.
-                </p>
-              </>
-            )}
-          </label>
-        </div>
-        <div className="mt-5">
-          <input
-            type="radio"
-            id="OpenNewTab"
-            name="SpotifyOption"
-            value="OpenNewTab"
-            checked={spotifyOptionState === SpotifyOption.OpenNewTab}
-            onChange={() => saveOption(SpotifyOption.OpenNewTab)}
-            className="mr-2"
-          />
-          <label htmlFor="OpenNewTab">
-            Open and Search
+        <div
+          className={classNames(
+            'p-4 hover:bg-green-200 rounded-lg',
+            { 'bg-green-200': spotifyOptionState === SpotifyOption.Search },
+            { 'bg-gray-200': spotifyOptionState !== SpotifyOption.Search },
+            { 'outline-forDefaultOption': tempOutlineForDefaultOption },
+          )}
+        >
+          <div>
+            <input
+              type="radio"
+              id="Search"
+              name="SpotifyOption"
+              value="Search"
+              checked={spotifyOptionState === SpotifyOption.Search}
+              onChange={() => saveOption(SpotifyOption.Search)}
+              className="mr-2"
+            />
+            {renderInputLabel('Search', 'Default (Login Needed) (Recommended)')}
+          </div>
+          <div>
             <p className="mt-2 text-gray-700">
-              Paradify opens Spotify and finds tracks. It does not automatically
-              add in your playlist.
+              Paradify shows a search result. So, you can choose which tracks to
+              add.
             </p>
-          </label>
+          </div>
+        </div>
+        <div
+          className={classNames(
+            'mt-5 p-4 hover:bg-green-200 rounded-lg',
+            { 'bg-green-200': spotifyOptionState === SpotifyOption.AutoSave },
+            { 'bg-gray-200': spotifyOptionState !== SpotifyOption.AutoSave },
+          )}
+        >
+          <div>
+            <input
+              type="radio"
+              id="AutoSave"
+              name="SpotifyOption"
+              value="AutoSave"
+              checked={spotifyOptionState === SpotifyOption.AutoSave}
+              onChange={() => saveOption(SpotifyOption.AutoSave)}
+              className="mr-2"
+            />
+            {renderInputLabel('AutoSave', 'Auto Save (Login Needed)')}
+          </div>
+          <div className="mt-2 text-gray-700">
+            <p>Paradify tries to find and add the tracks automatically.</p>
+            <p className="text-xs text-gray-600">
+              Less likely(30%), it might add the wrong tracks. In this case,
+              recommended to choose the option{' '}
+              <span className="font-bold">{'"Default"'}</span>.
+            </p>
+          </div>
+        </div>
+        <div
+          className={classNames(
+            'mt-5 p-4 hover:bg-green-200 rounded-lg',
+            { 'bg-green-200': spotifyOptionState === SpotifyOption.OpenNewTab },
+            { 'bg-gray-200': spotifyOptionState !== SpotifyOption.OpenNewTab },
+          )}
+        >
+          <div>
+            <input
+              type="radio"
+              id="OpenNewTab"
+              name="SpotifyOption"
+              value="OpenNewTab"
+              checked={spotifyOptionState === SpotifyOption.OpenNewTab}
+              onChange={() => saveOption(SpotifyOption.OpenNewTab)}
+              className="mr-2"
+            />
+            {renderInputLabel('OpenNewTab', 'Open in Spotify')}
+          </div>
+          <div>
+            <p className="mt-2 text-sm text-gray-700">
+              Paradify opens {'"Spotify Web Player"'} to search. Does not add
+              the tracks on behalf of you.
+            </p>
+            <p className="text-xs text-gray-600">
+              PS: Spotify does NOT allow neither you nor Paradify to open
+              Spotify apllication on your computer. This option only opens
+              Spotify Web Player
+            </p>
+          </div>
         </div>
       </>
     );
@@ -220,7 +230,6 @@ const Option: FC = () => {
   const injectDialogWindow = () => {
     const dialogName = 'p-d-paradify-dialog-in-youtube';
 
-    //Create dialog
     const dialog = window.document.createElement('div');
     dialog.className = dialogName;
     dialog.id = dialogName;
@@ -232,13 +241,19 @@ const Option: FC = () => {
     );
   };
 
+  const renderTopAnnouncement = () =>
+    tempOutlineForDefaultOption ? (
+      <>
+        <div className="h-10 bg-red-600 text-white w-full text-center flex items-center justify-center text-sm ">
+          <img src={launch} className="mr-2" />
+          Paradify now has a new option {'"Default"'}.
+        </div>
+      </>
+    ) : null;
+
   return (
     <>
-      <div className="h-10 bg-blue-600 text-white w-full text-center flex items-center justify-center text-sm ">
-        <img src={launch} className="mr-2" /> Paradify now supports Playlist
-        search. You can add all tracks of Youtube video in your Spotify
-        playlist.
-      </div>
+      {renderTopAnnouncement()}
       <div className="max-w-700 mx-auto text-sm text-gray-800">
         <div className="my-5">
           <ul className="flex flex-wrap my-5">
@@ -249,11 +264,26 @@ const Option: FC = () => {
               />
               Paradify - Options
             </li>
-
-            <li className="w-full sm:w-1/3 py-5  border-dotted border-b border-t"></li>
-            <li className="w-full sm:w-2/3 py-5  border-dotted border-b border-t">
-              {renderLoginContainer()}
-            </li>
+            {renderLoginContainer()}
+            {(!tokenState || !tokenState.access_token) && (
+              <>
+                <li className="w-full sm:w-1/3 py-5  border-dotted border-b border-t">
+                  Why login?
+                </li>
+                <li className="w-full sm:w-2/3 py-5  border-dotted border-b border-t">
+                  <div className="text-xs">
+                    You need to login and allow Paradify app in Spotify.
+                    Therefore, Paradify can add tracks into your Spotify
+                    playlist on behalf of you.
+                    <p className="text-gray-600">
+                      Note: Paradify does NOT collect any information from your
+                      Spotify account. You can always remove the permission
+                      under {'"Profile > Account > App"'}.
+                    </p>
+                  </div>
+                </li>
+              </>
+            )}
 
             <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
               <div>Spotify Icon Action</div>
@@ -264,53 +294,28 @@ const Option: FC = () => {
             <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
               <div>{renderSpotifyIconActionClick_Option()}</div>
             </li>
-
             <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
               <div>Feedback</div>
             </li>
             <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
               <div>
-                Feel free to ask any{' '}
+                Feel free to{' '}
                 <a
                   href="https://forms.gle/6V5hVCQhGxP6s9No7"
                   target="_blank"
                   rel="noreferrer"
                   className="underline"
-                >
-                  question
-                </a>{' '}
-                or share any{' '}
-                <a
-                  href="https://forms.gle/6V5hVCQhGxP6s9No7"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline"
-                >
-                  feedback
-                </a>{' '}
-                with us
-              </div>
-            </li>
-            <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
-              <div>Github</div>
-            </li>
-            <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
-              <div>
-                Paradify is an open source chrome extension. Here is the
-                repository{' '}
-                <button
                   onClick={() => {
-                    window.location.href =
-                      'https://github.com/volkanakinpasa/youtubetospotify';
                     ReactGA.event({
                       category: 'Options',
-                      action: 'Github - youtubetospotify',
+                      action: 'Contact Clicked',
                       label: '',
                     });
                   }}
                 >
-                  <div className="flex items-baseline underline">link</div>
-                </button>
+                  ask/share/report
+                </a>{' '}
+                any question/feedback/report
               </div>
             </li>
             <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
@@ -346,7 +351,6 @@ const Option: FC = () => {
           </div>
         </div>
       </div>
-      <GithubCorner href="https://github.com/volkanakinpasa/youtubetospotify" />
     </>
   );
 };

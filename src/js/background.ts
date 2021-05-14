@@ -2,16 +2,17 @@ import '../img/16.png';
 import '../img/48.png';
 import '../img/128.png';
 import {
+  DEPLOYMENT,
   DEPLOYMENT_VERSION,
   getRedirectAuthUrl,
   URLS,
   ENVIRONMENTS,
 } from './utils/constants';
-import { getRandomSuccessGif, storageUtil } from './utils';
+import { consoleLog, getRandomSuccessGif, storageUtil } from './utils';
 import { SpotifyOption } from './enums';
 import { Dialog } from './interfaces';
 
-const { BASE_URL } = URLS;
+const { UNINSTALL_URL } = URLS;
 
 const gaSendEvent = (data: any) => {
   if (process.env.NODE_ENV !== ENVIRONMENTS.PRODUCTION) return;
@@ -89,16 +90,16 @@ const onTokenCompleted = (token: any) => {
   });
 };
 
-function setBadgeText(text: any) {
+const setBadgeText = (text: string) => {
   // eslint-disable-next-line no-undef
   chrome.browserAction.setBadgeText({ text });
   setTimeout(() => clearBadge(), 5000);
-}
+};
 
-function clearBadge() {
+const clearBadge = () => {
   // eslint-disable-next-line no-undef
   chrome.browserAction.setBadgeText({ text: '' });
-}
+};
 
 const sendMessageToContentScript = (tabId: number, message: any) => {
   chrome.tabs.sendMessage(tabId, { ...message });
@@ -108,32 +109,38 @@ const sendMessageToRuntime = (message: any) => {
   chrome.runtime.sendMessage({ ...message });
 };
 
-function showDialog(message: any) {
+const showDialog = (message: any) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     sendMessageToContentScript(tabs[0].id, { ...message, type: 'showDialog' });
   });
-}
+};
 
-function openTab(url: string) {
+const hideDialog = (message: any) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    sendMessageToContentScript(tabs[0].id, { ...message, type: 'hideDialog' });
+  });
+};
+
+const openTab = (url: string) => {
   //eslint-disable-next-line no-undef
   chrome.tabs.create({
     url,
   });
-}
+};
 
-function openAuthRedirectUrl() {
+const openAuthRedirectUrl = () => {
   openTab(getRedirectAuthUrl());
-}
+};
 
-function dialogAddAll(data: any) {
+const dialogAddAll = (data: any) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     chrome.tabs.sendMessage(tabs[0].id, { data: data, type: 'dialogAddAll' });
   });
-}
+};
 
 const messageListener = (event: any, serder: any, callback: any) => {
   switch (event.type) {
-    case 'addIconClicked':
+    case 'gaSendEvent':
       gaSendEvent(event.data);
       break;
     case 'clearBadge':
@@ -150,6 +157,9 @@ const messageListener = (event: any, serder: any, callback: any) => {
     case 'showDialog':
       showDialog(event);
       break;
+    case 'hideDialog':
+      hideDialog(event);
+      break;
     case 'openAuthRedirectUrl':
       openAuthRedirectUrl();
       break;
@@ -162,8 +172,10 @@ const messageListener = (event: any, serder: any, callback: any) => {
     case 'buyMeACoffeeClicked':
       gaSendEvent(event.data);
       break;
-    case 'spotifyIconCannotloadedInYTPlayer':
-    case 'spotifyIconCannotloadedInBody':
+    case 'spotifyIconCannotLoaded':
+      gaSendEvent(event.data);
+      break;
+    case 'searchResultCannotLoaded':
       gaSendEvent(event.data);
       break;
   }
@@ -194,14 +206,18 @@ chrome.runtime.onMessageExternal.addListener(function (
   messageListener(message, sender, sendResponse);
 });
 
-chrome.runtime.setUninstallURL(`${BASE_URL}/home/UnInstalled`);
+chrome.runtime.setUninstallURL(UNINSTALL_URL);
 
-chrome.runtime.onInstalled.addListener(function (details) {
+chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason == 'install') {
-    //Save Auto Saved
-    storageUtil.setSpotifyIconClickActionOption(SpotifyOption.AutoSave);
-    storageUtil.setStorage(DEPLOYMENT_VERSION, 1);
-    openTab(`chrome-extension://${chrome.runtime.id}/options.html`);
+    storageUtil.setSpotifyIconClickActionOption(SpotifyOption.Search);
+    try {
+      const deploymentVersion = await storageUtil.getStorage(DEPLOYMENT);
+      if (!deploymentVersion || deploymentVersion < DEPLOYMENT_VERSION) {
+        storageUtil.setStorage(DEPLOYMENT, DEPLOYMENT_VERSION);
+        openTab(`chrome-extension://${chrome.runtime.id}/options.html`);
+      }
+    } catch {}
     gaSendEvent({
       pageName: 'Chrome Backgroud',
       eventCategory: 'Extension',
@@ -210,7 +226,17 @@ chrome.runtime.onInstalled.addListener(function (details) {
     });
     refreshPage();
   } else if (details.reason == 'update') {
-    storageUtil.setStorage(DEPLOYMENT_VERSION, 1);
+    storageUtil.setSpotifyIconClickActionOption(SpotifyOption.Search);
+    try {
+      const deploymentVersion = await storageUtil.getStorage(DEPLOYMENT);
+      if (!deploymentVersion || deploymentVersion < DEPLOYMENT_VERSION) {
+        storageUtil.setStorage(DEPLOYMENT, DEPLOYMENT_VERSION);
+        openTab(`chrome-extension://${chrome.runtime.id}/options.html`);
+      }
+    } catch (error) {
+      consoleLog({ error });
+    }
+
     gaSendEvent({
       pageName: 'Chrome Backgroud',
       eventCategory: 'Extension',
@@ -221,30 +247,19 @@ chrome.runtime.onInstalled.addListener(function (details) {
   }
 });
 
+const spotifyIconClickAction = () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    if (tabs.length > 0)
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'SpotifyIconClickAction' });
+  });
+};
+
 chrome.commands.onCommand.addListener(function (command) {
-  console.log('Command:', command);
   if (command === 'add-to-spotify') {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      console.log('active tab:', tabs[0].id);
-      chrome.tabs.sendMessage(tabs[0].id, { type: 'onShortcutKeyPress' });
-    });
+    spotifyIconClickAction();
   }
 });
 
-// chrome.storage.onChanged.addListener(function (changes, namespace) {
-
-//   for (const key in changes) {
-//     const storageChange = changes[key];
-//     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-//       chrome.tabs.sendMessage(tabs[0].id, {
-//         type: 'storageOnchangeComplete',
-//         data: {
-//           key,
-//           namespace,
-//           oldValue: storageChange.oldValue,
-//           newValue: storageChange.newValue,
-//         },
-//       });
-//     });
-//   }
-// });
+chrome.browserAction.onClicked.addListener(() => {
+  spotifyIconClickAction();
+});

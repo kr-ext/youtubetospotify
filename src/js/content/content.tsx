@@ -2,7 +2,11 @@ import React from 'react';
 import { render } from 'react-dom';
 import App from './App';
 import ModalDialogInYouTube from './dialog/ModalDialogInYouTube';
-import { paradify, contentUtil } from '../utils';
+import { paradify, contentUtil, consoleLog } from '../utils';
+
+let countTryOfSpotifyIconInject = 1;
+const injectTryCount = 10;
+const injectTryTimeout = 1000;
 
 const injectParadifyAddContainer = () => {
   if (
@@ -10,15 +14,13 @@ const injectParadifyAddContainer = () => {
     window.location.href.indexOf('music.youtube.com') === -1
   ) {
     const containerName = 'paradify-container-in-youtube';
-    if (window.document.getElementById(containerName)) {
-      return;
+    if (!window.document.getElementById(containerName)) {
+      const paradifyMainContainer = window.document.createElement('div');
+      paradifyMainContainer.id = containerName;
+      paradifyMainContainer.className = containerName;
+
+      window.document.body.appendChild(paradifyMainContainer);
     }
-    const paradifyMainContainer = window.document.createElement('div');
-    paradifyMainContainer.id = containerName;
-    paradifyMainContainer.className = containerName;
-
-    window.document.body.appendChild(paradifyMainContainer);
-
     render(
       <App />,
       window.document.getElementById(containerName),
@@ -31,23 +33,56 @@ const injectParadifyAddContainer = () => {
 
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const ytPlayerMenuDiv = window.document.querySelector(
-            '.ytp-chrome-controls .ytp-right-controls',
+            '.ytp-right-controls',
           );
 
           if (!ytPlayerMenuDiv) {
-            iconCannotBeLoaded('spotifyIconCannotloaded-YTBarNotExist', null);
-            throw new Error('spotifyIconCannotloaded-YTBarNotExist');
+            iconCannotBeLoaded(
+              `spotifyIconCannotloaded-YTBarNotExist-${countTryOfSpotifyIconInject}-try`,
+              null,
+            );
+
+            if (countTryOfSpotifyIconInject <= injectTryCount) {
+              countTryOfSpotifyIconInject++;
+              setTimeout(() => {
+                injectParadifyAddContainer();
+              }, injectTryTimeout);
+              return;
+            } else {
+              throw new Error('spotifyIconCannotloaded-YTBarNotExist');
+            }
           }
 
           ytPlayerMenuDiv.insertBefore(
             spotifyButton as Node,
             ytPlayerMenuDiv.firstChild,
           );
-        } catch (err) {
-          console.log('paradify icon cannot be loaded', err);
+
+          try {
+            setTimeout(() => {
+              document.body.appendChild(
+                document.querySelector('#paradify-search-result-container'),
+              );
+            }, 2000);
+          } catch (error) {
+            searchResultCannotLoaded(
+              'searchResultCannotLoaded',
+              error.toString(),
+            );
+            consoleLog({
+              message:
+                'paradify search result container cannot be loaded in body',
+              error,
+            });
+          }
+        } catch (error) {
+          consoleLog({
+            message: 'paradify icon cannot be loaded in TY Player.',
+            error,
+          });
           iconCannotBeLoaded(
             'spotifyIconCannotloadedInYTPlayer',
-            err.toString(),
+            error.toString(),
           );
           //try loading in another side.
           try {
@@ -59,12 +94,15 @@ const injectParadifyAddContainer = () => {
               'spotify-button-in-owner',
             );
 
-            const videoOwnerDiv = document.querySelector(
+            const videoOwnerDivs = document.querySelectorAll(
               'ytd-video-owner-renderer',
             );
             //add it next to owner
-            if (videoOwnerDiv) {
-              videoOwnerDiv.appendChild(spotifyButton);
+
+            if (videoOwnerDivs && videoOwnerDivs.length > 0) {
+              videoOwnerDivs.forEach((video) => {
+                video.appendChild(spotifyButton);
+              });
             }
             //otherwise make it absolute
             else {
@@ -79,12 +117,15 @@ const injectParadifyAddContainer = () => {
               document.body.appendChild(paradifyButtonAbsolute);
               paradifyButtonAbsolute.appendChild(spotifyButton);
             }
-          } catch (err) {
-            console.log(
-              'paradify icon cannot be loaded in owner or absolute',
-              err,
+          } catch (error) {
+            consoleLog({
+              message: 'paradify icon cannot be loaded in owner or absolute',
+              error,
+            });
+            iconCannotBeLoaded(
+              'spotifyIconCannotloadedInBody',
+              error.toString(),
             );
-            iconCannotBeLoaded('spotifyIconCannotloadedInBody', err.toString());
           }
         }
         // injectSpotifyIconOnThumbnails();
@@ -116,7 +157,7 @@ function recommendedVideosMutationStart(targetNode: any) {
   // Your code here...
 
   if (!targetNode) {
-    console.log('no target node found');
+    consoleLog({ message: 'no target node found' });
     return;
   }
 
@@ -125,7 +166,6 @@ function recommendedVideosMutationStart(targetNode: any) {
   const callback = (mutationList: any) => {
     for (const mutation of mutationList) {
       mutation.addedNodes.forEach((node: any) => {
-        console.log({ node });
         const title = node.querySelector('#video-title');
 
         const thumbnail = node.querySelector('ytd-thumbnail');
@@ -156,7 +196,7 @@ function recommendedVideosMutationStart(targetNode: any) {
           //   false,
           // );
         } else {
-          console.log('no thumbnail found => ', title);
+          consoleLog({ message: 'no thumbnail found => ', title });
         }
       });
 
@@ -169,21 +209,20 @@ function recommendedVideosMutationStart(targetNode: any) {
   globalObserver.observe(targetNode, config);
 }
 
-function addIconOnRecommendedVideos() {
-  let tried = 0;
-  const contents = setInterval(function () {
-    const targetNode = document.querySelector(
-      'ytd-watch-next-secondary-results-renderer > #items > ytd-item-section-renderer > #contents',
-    );
+// function addIconOnRecommendedVideos() {
+//   let tried = 0;
+//   const contents = setInterval(function () {
+//     const targetNode = document.querySelector(
+//       'ytd-watch-next-secondary-results-renderer > #items > ytd-item-section-renderer > #contents',
+//     );
 
-    if (targetNode !== null || tried >= 15) {
-      clearInterval(contents);
-      recommendedVideosMutationStart(targetNode);
-    }
-    tried++;
-    console.log(tried);
-  }, 100);
-}
+//     if (targetNode !== null || tried >= 15) {
+//       clearInterval(contents);
+//       recommendedVideosMutationStart(targetNode);
+//     }
+//     tried++;
+//   }, 100);
+// }
 
 const onLoad = () => {
   paradify.pageLoad();
@@ -203,11 +242,26 @@ const iconCannotBeLoaded = (type: string, detailedError?: string) => {
   try {
     //GA
     chrome.runtime.sendMessage({
-      type,
+      type: 'spotifyIconCannotLoaded',
       data: {
         pageName: 'YouTube',
         eventCategory: 'YouTube Video',
-        eventAction: 'Spotify Icon Cannot be Loaded in YT Player',
+        eventAction: type,
+        eventLabel: detailedError,
+      },
+    });
+  } catch {}
+};
+
+const searchResultCannotLoaded = (type: string, detailedError?: string) => {
+  try {
+    //GA
+    chrome.runtime.sendMessage({
+      type: 'searchResultCannotLoaded',
+      data: {
+        pageName: 'YouTube',
+        eventCategory: 'YouTube Video',
+        eventAction: type,
         eventLabel: detailedError,
       },
     });

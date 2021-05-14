@@ -8,18 +8,6 @@ const WriteFilePlugin = require('write-file-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
 //   .BundleAnalyzerPlugin;
 
-var fileExtensions = [
-  'jpg',
-  'jpeg',
-  'png',
-  'gif',
-  'eot',
-  'otf',
-  'ttf',
-  'woff',
-  'woff2',
-];
-
 const output = {
   filename: '[name].js',
   path: path.join(__dirname, '..', 'dist'),
@@ -54,7 +42,7 @@ const config = {
         use: ['@svgr/webpack', 'url-loader'],
       },
       {
-        test: /\.(jpg|jpeg|png|gif)$/,
+        test: /\.(jpg|jpeg|png|gif|mp3)$/,
         use: 'file-loader?name=media/[name].[ext]',
       },
       {

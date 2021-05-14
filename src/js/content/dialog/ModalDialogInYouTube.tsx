@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import paradifyLogo from '../../../img/paradify_logo.png';
 import dialogClose from '../../../img/dialog_close.png';
 import coffee from '../../../img/buy-me-a-coffee.png';
-import { Dialog, DialogBehavior } from '../../interfaces';
+import { Dialog } from '../../interfaces';
 import { TIMEOUT_MS, URLS } from '../../utils/constants';
 import style from './dialog.shadowcss';
 
@@ -14,11 +14,7 @@ const ModalDialogInYouTube: FC = () => {
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    chrome.runtime.onMessage.addListener(function (
-      event,
-      sender,
-      sendResponse,
-    ) {
+    chrome.runtime.onMessage.addListener(function (event) {
       if (event.type === 'showDialog') {
         setDialog(event.data);
         clearTimeout(timeout);
@@ -28,6 +24,8 @@ const ModalDialogInYouTube: FC = () => {
           }, event.data.behavior.hideTimeout || TIMEOUT_MS);
         }
         setShowDialog(true);
+      } else if (event.type === 'hideDialog') {
+        close();
       }
     });
   }, []);
@@ -46,20 +44,17 @@ const ModalDialogInYouTube: FC = () => {
     });
   };
 
-  const renderClose = (behavior: DialogBehavior) => {
-    if (!behavior.autoHide) {
-      return (
-        <button className="p-d-btn-close" onClick={() => close()}>
-          <img
-            src={chrome.runtime.getURL(dialogClose)}
-            height="10"
-            width="10"
-            className="p-d-ml-1"
-          />
-        </button>
-      );
-    }
-    return null;
+  const renderClose = () => {
+    return (
+      <button className="p-d-btn-close" onClick={() => close()}>
+        <img
+          src={chrome.runtime.getURL(dialogClose)}
+          height="10"
+          width="10"
+          className="p-d-ml-1"
+        />
+      </button>
+    );
   };
 
   return (
@@ -93,7 +88,7 @@ const ModalDialogInYouTube: FC = () => {
                         {dialog.message.title}
                       </div>
                     </div>
-                    <div>{renderClose(dialog.behavior)}</div>
+                    <div>{renderClose()}</div>
                   </div>
                 </div>
 
@@ -145,7 +140,7 @@ const ModalDialogInYouTube: FC = () => {
                           className="p-d-mt-5 p-d-button"
                           onClick={() => addAll(dialog.confirmation.data)}
                         >
-                          Add All
+                          Add
                         </button>
                       </div>
                     </>
