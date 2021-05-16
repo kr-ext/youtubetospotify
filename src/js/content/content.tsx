@@ -28,9 +28,16 @@ const injectParadifyAddContainer = () => {
       function () {
         try {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const spotifyButton = window.document.getElementById(containerName)
-            .firstChild;
+          const spotifyButton = window.document.querySelector(
+            `.${containerName} > button#paradify`,
+          );
 
+          if (
+            window.document.querySelector('.ytp-right-controls > #paradify') ||
+            !spotifyButton
+          ) {
+            return;
+          }
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const ytPlayerMenuDiv = window.document.querySelector(
             '.ytp-right-controls',
@@ -87,8 +94,18 @@ const injectParadifyAddContainer = () => {
           //try loading in another side.
           try {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const spotifyButton = window.document.getElementById(containerName)
-              .firstChild;
+            const spotifyButton = window.document.querySelector(
+              `.${containerName} > button#paradify`,
+            );
+
+            if (
+              window.document.querySelector(
+                'ytd-video-owner-renderer > #paradify',
+              ) ||
+              !spotifyButton
+            ) {
+              return;
+            }
 
             (spotifyButton as HTMLButtonElement).classList.add(
               'spotify-button-in-owner',
