@@ -11,7 +11,8 @@
     "lint-staged": "lint-staged",
     "commit": "git-cz",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "zip": "cd dist && zip -r paradify.zip ."
   },
   "dependencies": {
     "axios": "^0.21.1",
