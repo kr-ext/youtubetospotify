@@ -181,19 +181,6 @@ const messageListener = (event: any, serder: any, callback: any) => {
   }
 };
 
-const refreshPage = () => {
-  chrome.tabs.query(
-    {
-      url: '*://*.youtube.com/*',
-    },
-    function (tabs) {
-      tabs.forEach((tab) => {
-        chrome.tabs.update(tab.id, { url: tab.url });
-      });
-    },
-  );
-};
-
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   messageListener(message, sender, sendResponse);
 });
@@ -224,7 +211,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       eventAction: 'Extension Installed',
       eventLabel: '',
     });
-    refreshPage();
   } else if (details.reason == 'update') {
     storageUtil.setSpotifyIconClickActionOption(SpotifyOption.Search);
     try {
@@ -243,7 +229,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       eventAction: 'Extension Updated',
       eventLabel: '',
     });
-    refreshPage();
   }
 });
 
