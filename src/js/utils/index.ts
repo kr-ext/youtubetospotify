@@ -3,6 +3,7 @@ import storageUtil from './storageUtil';
 import dialogUtils from './dialogUtils';
 import analyticsHelper from './analyticsHelper';
 import { ENVIRONMENTS } from './constants';
+import { browser } from 'webextension-polyfill-ts';
 
 const initializeReactGA = (ReactGA: any, pageName: string) => {
   if (process.env.NODE_ENV !== ENVIRONMENTS.PRODUCTION) return;
@@ -52,12 +53,12 @@ function readYoutube() {
 
 const paradify = {
   pageLoad: () => {
-    chrome.runtime.sendMessage({ type: 'clearBadge' });
+    browser.runtime.sendMessage({ type: 'clearBadge' });
 
     const trackInfo = paradify.getTrackInfo(window.location.href.toLowerCase());
 
     if (trackInfo != undefined && trackInfo.success) {
-      chrome.runtime.sendMessage({ type: 'setBadgeText', data: ' 1 ' });
+      browser.runtime.sendMessage({ type: 'setBadgeText', data: ' 1 ' });
     }
   },
 

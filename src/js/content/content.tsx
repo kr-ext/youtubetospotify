@@ -258,7 +258,7 @@ const onLoad = () => {
 const iconCannotBeLoaded = (type: string, detailedError?: string) => {
   try {
     //GA
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
       type: 'spotifyIconCannotLoaded',
       data: {
         pageName: 'YouTube',
@@ -273,7 +273,7 @@ const iconCannotBeLoaded = (type: string, detailedError?: string) => {
 const searchResultCannotLoaded = (type: string, detailedError?: string) => {
   try {
     //GA
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
       type: 'searchResultCannotLoaded',
       data: {
         pageName: 'YouTube',

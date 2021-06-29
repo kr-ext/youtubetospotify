@@ -7,6 +7,7 @@ import { ReactComponent as AddButtonSvg } from '../../../img/round-add-button.sv
 import style from './searchResultDialog.shadowcss';
 import { URLS } from '../../utils/constants';
 import AudioPlayer from './AudioPlayer';
+import { browser } from 'webextension-polyfill-ts';
 
 interface Props {
   result: any;
@@ -35,7 +36,7 @@ const SearchResult: FC<Props> = (props: Props) => {
         onClick={() => close()}
       >
         <img
-          src={chrome.runtime.getURL(dialogClose)}
+          src={browser.runtime.getURL(dialogClose)}
           height="10"
           width="10"
           className="p-d-ml-1"
@@ -227,7 +228,7 @@ const SearchResult: FC<Props> = (props: Props) => {
                 <div className="p-d-flex p-d-items-center p-d-mx-auto p-d-justify-between">
                   <div className="p-d-flex p-d-items-center">
                     <img
-                      src={chrome.runtime.getURL(paradifyLogo)}
+                      src={browser.runtime.getURL(paradifyLogo)}
                       height="20"
                       width="29"
                       className="p-d-ml-1"

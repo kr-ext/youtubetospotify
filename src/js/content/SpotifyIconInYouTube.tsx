@@ -49,10 +49,10 @@ const SpotifyIconInYouTube: FC = () => {
 
     switch (audioType) {
       case AudioType.SAVED:
-        audioUrl = chrome.runtime.getURL(audioDoneUrl);
+        audioUrl = browser.runtime.getURL(audioDoneUrl);
         break;
       default:
-        audioUrl = chrome.runtime.getURL(audioFailUrl);
+        audioUrl = browser.runtime.getURL(audioFailUrl);
         break;
     }
     const audio = new Audio(audioUrl);
@@ -94,7 +94,7 @@ const SpotifyIconInYouTube: FC = () => {
   };
 
   const openAuth = (): void => {
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
       type: 'openAuthRedirectUrl',
     });
   };
@@ -384,7 +384,7 @@ const SpotifyIconInYouTube: FC = () => {
 
   useEffect(() => {
     interceptAxios();
-    chrome.runtime.onMessage.addListener(function (event) {
+    browser.runtime.onMessage.addListener(function (event) {
       if (event.type === 'dialogAddAll') {
         addAll(event.data);
       } else if (event.type === 'SpotifyIconClickAction') {
@@ -406,7 +406,7 @@ const SpotifyIconInYouTube: FC = () => {
         <div className="div-spotify-icon">
           {isSaving ? (
             <img
-              src={chrome.runtime.getURL(loading)}
+              src={browser.runtime.getURL(loading)}
               width="100%"
               height="100%"
               title="Saving"
@@ -414,7 +414,7 @@ const SpotifyIconInYouTube: FC = () => {
             />
           ) : (
             <img
-              src={chrome.runtime.getURL(spotifyImageUrl)}
+              src={browser.runtime.getURL(spotifyImageUrl)}
               width="100%"
               height="100%"
               title="Add to Spotify"

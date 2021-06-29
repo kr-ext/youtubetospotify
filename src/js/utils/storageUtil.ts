@@ -8,16 +8,18 @@ import {
   SPOTIFY_TOKEN,
 } from './constants';
 
+import { browser } from 'webextension-polyfill-ts';
+
 const getStorage = async (key: string): Promise<any> =>
   new Promise<string>((resolve) => {
-    chrome.storage.sync.get([key], (data) => {
+    browser.storage.sync.get([key], (data) => {
       resolve(data[key]);
     });
   });
 
 const setStorage = (key: string, value: any) => {
   new Promise<void>((resolve) => {
-    chrome.storage.sync.set({ [key]: value }, () => {
+    browser.storage.sync.set({ [key]: value }, () => {
       resolve();
     });
   });
@@ -26,7 +28,7 @@ const setStorage = (key: string, value: any) => {
 const getSpotifyToken = async (): Promise<Token> =>
   await getStorage(SPOTIFY_TOKEN);
 // new Promise<Token>((resolve) => {
-//   chrome.storage.sync.get([SPOTIFY_TOKEN], (data) => {
+//   browser.storage.sync.get([SPOTIFY_TOKEN], (data) => {
 //     resolve(data[SPOTIFY_TOKEN]);
 //   });
 // });
@@ -71,7 +73,7 @@ const increaseSavedCount = async (): Promise<void> => {
 
 const removeStorage = (key: string) => {
   new Promise<void>((resolve) => {
-    chrome.storage.sync.remove(key, () => {
+    browser.storage.sync.remove(key, () => {
       resolve();
     });
   });

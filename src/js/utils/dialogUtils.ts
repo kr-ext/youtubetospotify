@@ -6,6 +6,7 @@ import {
   getSpotifySearchUrl,
 } from '.';
 import { Dialog } from '../interfaces';
+import { browser } from 'webextension-polyfill-ts';
 
 const hideDialog = (): void => {
   const dialog: Dialog = {
@@ -16,7 +17,7 @@ const hideDialog = (): void => {
       text: '',
     },
   };
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'hideDialog',
     data: dialog,
   });
@@ -32,7 +33,7 @@ const errorInGeneral = (): void => {
     },
   };
 
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'showDialog',
     data: dialog,
   });
@@ -47,7 +48,7 @@ const showNoTitle = (): void => {
     },
   };
 
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'showDialog',
     data: dialog,
   });
@@ -69,7 +70,7 @@ const confirmationDialog = (
     },
   };
 
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'showDialog',
     data: playlistDialog,
   });
@@ -87,7 +88,7 @@ const saved = (title: string, text: string, playlistUrl: string): void => {
     },
   };
 
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'showDialog',
     data: dialog,
   });
@@ -107,7 +108,7 @@ const notSaved = (q: string): void => {
     },
   };
 
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'showDialog',
     data: dialog,
   });
@@ -123,7 +124,7 @@ const welcome = (): void => {
     },
   };
 
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'showDialog',
     data: dialog,
   });

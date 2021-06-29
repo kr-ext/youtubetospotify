@@ -1,6 +1,7 @@
 import React, { useState, useEffect, FC, useRef } from 'react';
 import playIcon from '../../../img/play_m.png';
 import pauseIcon from '../../../img/pause_m.png';
+import { browser } from 'webextension-polyfill-ts';
 
 interface Props {
   url: string;
@@ -30,11 +31,11 @@ const AudioPlayer: FC<Props> = (props: Props) => {
       <button onClick={toggle} className="mr-2 outline-none focus:outline-none">
         {playing ? (
           <>
-            <img src={chrome.runtime.getURL(pauseIcon)} style={imgStyle} />
+            <img src={browser.runtime.getURL(pauseIcon)} style={imgStyle} />
           </>
         ) : (
           <>
-            <img src={chrome.runtime.getURL(playIcon)} style={imgStyle} />
+            <img src={browser.runtime.getURL(playIcon)} style={imgStyle} />
           </>
         )}
       </button>

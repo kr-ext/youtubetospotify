@@ -7,6 +7,7 @@ import coffee from '../../../img/buy-me-a-coffee.png';
 import { Dialog } from '../../interfaces';
 import { TIMEOUT_MS, URLS } from '../../utils/constants';
 import style from './dialog.shadowcss';
+import { browser } from 'webextension-polyfill-ts';
 
 const ModalDialogInYouTube: FC = () => {
   const [showDialog, setShowDialog] = useState(false);
@@ -14,7 +15,7 @@ const ModalDialogInYouTube: FC = () => {
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    chrome.runtime.onMessage.addListener(function (event) {
+    browser.runtime.onMessage.addListener(function (event) {
       if (event.type === 'showDialog') {
         setDialog(event.data);
         clearTimeout(timeout);
@@ -38,7 +39,7 @@ const ModalDialogInYouTube: FC = () => {
   const addAll = (data: any) => {
     close();
 
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
       type: 'dialogAddAll',
       data,
     });
@@ -48,7 +49,7 @@ const ModalDialogInYouTube: FC = () => {
     return (
       <button className="p-d-btn-close" onClick={() => close()}>
         <img
-          src={chrome.runtime.getURL(dialogClose)}
+          src={browser.runtime.getURL(dialogClose)}
           height="10"
           width="10"
           className="p-d-ml-1"
@@ -79,7 +80,7 @@ const ModalDialogInYouTube: FC = () => {
                   <div className="p-d-flex p-d-items-center p-d-mx-auto p-d-justify-between">
                     <div className="p-d-flex p-d-items-center">
                       <img
-                        src={chrome.runtime.getURL(paradifyLogo)}
+                        src={browser.runtime.getURL(paradifyLogo)}
                         height="20"
                         width="29"
                         className="p-d-ml-1"
@@ -120,7 +121,7 @@ const ModalDialogInYouTube: FC = () => {
                         <button
                           className="p-d-button"
                           onClick={() => {
-                            chrome.runtime.sendMessage({
+                            browser.runtime.sendMessage({
                               type: 'openTab',
                               data: { url: dialog.message.link.href },
                             });
@@ -153,13 +154,13 @@ const ModalDialogInYouTube: FC = () => {
                     <button
                       className="p-d-button-donation"
                       onClick={() => {
-                        chrome.runtime.sendMessage({
+                        browser.runtime.sendMessage({
                           type: 'openTab',
                           data: { url: URLS.DONATION_BUY_ME_A_COFFEE },
                         });
 
                         //GA
-                        chrome.runtime.sendMessage({
+                        browser.runtime.sendMessage({
                           type: 'buyMeACoffeeClicked',
                           data: {
                             pageName: 'YouTube',
@@ -170,7 +171,7 @@ const ModalDialogInYouTube: FC = () => {
                       }}
                     >
                       <img
-                        src={chrome.runtime.getURL(coffee)}
+                        src={browser.runtime.getURL(coffee)}
                         className="buy-me-a-coffee"
                       />
                     </button>

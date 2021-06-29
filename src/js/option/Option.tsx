@@ -78,7 +78,7 @@ const Option: FC = () => {
   };
 
   const loginSpotify = async () => {
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
       type: 'openAuthRedirectUrl',
     });
 
@@ -112,7 +112,7 @@ const Option: FC = () => {
               <button className="underline flex" onClick={() => loginSpotify()}>
                 Login with Spotify{' '}
                 <img
-                  src={chrome.runtime.getURL(spotifyImageUrl)}
+                  src={browser.runtime.getURL(spotifyImageUrl)}
                   width="20"
                   height="20"
                   title="Login with Spotify"
@@ -259,7 +259,7 @@ const Option: FC = () => {
           <ul className="flex flex-wrap my-5">
             <li className="w-full sm:w-3/3 text-2xl flex items-center py-5 text-gray-600 border-dotted border-b">
               <img
-                src={chrome.runtime.getURL(paradifyLogo)}
+                src={browser.runtime.getURL(paradifyLogo)}
                 className="mr-3 h-6"
               />
               Paradify - Options
@@ -335,7 +335,7 @@ const Option: FC = () => {
                 >
                   <div className="flex items-baseline">
                     <img
-                      src={chrome.runtime.getURL(coffee)}
+                      src={browser.runtime.getURL(coffee)}
                       className="buy-me-a-coffee"
                     />
                   </div>

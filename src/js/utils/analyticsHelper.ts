@@ -1,5 +1,7 @@
+import { browser } from 'webextension-polyfill-ts';
+
 const autoSaveStarted = (query: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -11,7 +13,7 @@ const autoSaveStarted = (query: string): void => {
 };
 
 const autoSaveSaved = (query: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -23,7 +25,7 @@ const autoSaveSaved = (query: string): void => {
 };
 
 const autoSaveNotSaved = (query: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -35,7 +37,7 @@ const autoSaveNotSaved = (query: string): void => {
 };
 
 const autoSavePlaylistConfirmation = (playlistName: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -47,7 +49,7 @@ const autoSavePlaylistConfirmation = (playlistName: string): void => {
 };
 
 const autoSavePlaylistSaved = (eventLabel: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -59,7 +61,7 @@ const autoSavePlaylistSaved = (eventLabel: string): void => {
 };
 
 const autoSavePlaylistNotSaved = (eventLabel: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -71,7 +73,7 @@ const autoSavePlaylistNotSaved = (eventLabel: string): void => {
 };
 
 const autoSavePlaylistError = (eventLabel: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -83,7 +85,7 @@ const autoSavePlaylistError = (eventLabel: string): void => {
 };
 
 const autoSaveError = (q: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -95,7 +97,7 @@ const autoSaveError = (q: string): void => {
 };
 
 const searchStarted = (query: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -107,7 +109,7 @@ const searchStarted = (query: string): void => {
 };
 
 const searchError = (query: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -119,7 +121,7 @@ const searchError = (query: string): void => {
 };
 
 const reSearchStarted = (query: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -131,7 +133,7 @@ const reSearchStarted = (query: string): void => {
 };
 
 const reSearchError = (label: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -143,7 +145,7 @@ const reSearchError = (label: string): void => {
 };
 
 const openAndSearchInSpotify = (query: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -155,7 +157,7 @@ const openAndSearchInSpotify = (query: string): void => {
 };
 
 const errorOnRefreshToken = (): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -166,7 +168,7 @@ const errorOnRefreshToken = (): void => {
 };
 
 export const failedOnRefreshToken = (): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -177,7 +179,7 @@ export const failedOnRefreshToken = (): void => {
 };
 
 const errorOnInterceptAPI = (err: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -189,7 +191,7 @@ const errorOnInterceptAPI = (err: string): void => {
 };
 
 const addTracksSuccess = (q: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -201,7 +203,7 @@ const addTracksSuccess = (q: string): void => {
 };
 
 const addTracksFailed = (q: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
@@ -213,7 +215,7 @@ const addTracksFailed = (q: string): void => {
 };
 
 const addTracksError = (q: string): void => {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'gaSendEvent',
     data: {
       pageName: 'YouTube',
