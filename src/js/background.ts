@@ -70,24 +70,12 @@ const onTokenCompleted = (token: any) => {
     },
   };
 
-  chrome.tabs.query(
-    {
-      url: '*://*.youtube.com/*',
-    },
-    function (tabs) {
-      tabs.forEach((tab) => {
-        sendMessageToContentScript(tab.id, {
-          data: dialog,
-          type: 'showDialog',
-        });
-      });
-    },
-  );
-
-  sendMessageToRuntime({
+  const data = {
     data: dialog,
     type: 'showDialog',
-  });
+  };
+
+  sendMessageToRuntime(data);
 };
 
 const setBadgeText = (text: string) => {
@@ -128,8 +116,20 @@ const openTab = (url: string) => {
   });
 };
 
+const openTabInPopup = (url: string) => {
+  chrome.windows.create({
+    url: url,
+    focused: true,
+    type: 'popup',
+    // top: Math.floor(window.screen.availHeight / 1.2),
+    // left: Math.floor(window.screen.availWidth / 1.2),
+    height: Math.floor(window.screen.availHeight / 1.2),
+    width: Math.floor(window.screen.availWidth / 1.2),
+  });
+};
+
 const openAuthRedirectUrl = () => {
-  openTab(getRedirectAuthUrl());
+  openTabInPopup(getRedirectAuthUrl());
 };
 
 const dialogAddAll = (data: any) => {

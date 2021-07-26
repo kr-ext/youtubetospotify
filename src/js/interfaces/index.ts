@@ -28,5 +28,23 @@ interface Dialog {
   confirmation?: DialogConfirmation;
   showDonation?: boolean;
 }
+interface TrackObject {
+  track: string;
+  artist: string;
+}
 
-export { Token, Dialog, DialogBehavior, DialogMessage };
+interface TrackResponseObject {
+  track: TrackObject;
+  success: boolean;
+  errMessage: string;
+  pageName: string;
+}
+
+export {
+  Token,
+  Dialog,
+  DialogBehavior,
+  DialogMessage,
+  TrackObject,
+  TrackResponseObject,
+};

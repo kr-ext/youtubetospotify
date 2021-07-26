@@ -3,6 +3,7 @@ import storageUtil from './storageUtil';
 import dialogUtils from './dialogUtils';
 import analyticsHelper from './analyticsHelper';
 import { ENVIRONMENTS } from './constants';
+import { TrackObject, TrackResponseObject } from '../interfaces';
 
 const initializeReactGA = (ReactGA: any, pageName: string) => {
   if (process.env.NODE_ENV !== ENVIRONMENTS.PRODUCTION) return;
@@ -18,84 +19,84 @@ const initializeReactGA = (ReactGA: any, pageName: string) => {
   });
 };
 
+const isYouTubeVideo = (): boolean =>
+  window.location.href.indexOf('youtube.com/watch') > -1 &&
+  window.location.href.indexOf('music.youtube.com') === -1;
+
+const isYouTubeMusic = (): boolean =>
+  window.location.href.indexOf('music.youtube.com/watch') > -1;
+
 const consoleLog = (data: any): void => {
   console.log('%c----------------Paradify----------------', 'color:green');
   console.log(data);
   console.log('%c----------------Paradify----------------', 'color:green');
 };
 
-function getPageName(url: string): string {
+function getPageName(): string {
   let pageName = '';
-  if (
-    url.indexOf('youtube.com/watch') > -1 ||
-    url.indexOf('chrome-extension://') > -1
-  ) {
+  if (isYouTubeVideo()) {
     pageName = 'youtube';
+  } else if (isYouTubeMusic()) {
+    pageName = 'youtubemusic';
   }
-
   return pageName;
 }
 
-function readNowPlayingText(pageName: string) {
-  if (pageName == 'youtube') {
+function readNowPlayingText(pageName: string): TrackObject {
+  if (pageName === 'youtube') {
     return readYoutube();
+  } else if (pageName === 'youtubemusic') {
+    return readYoutubeMusic();
   } else {
     return null;
   }
 }
 
-function readYoutube() {
+function readYoutube(): TrackObject {
   const track = document.title.trim().replace(' - YouTube', '');
-  const result = { track: track };
-  return result;
+  return { track, artist: null };
+}
+
+function readYoutubeMusic(): TrackObject {
+  const track =
+    (document.querySelector(
+      '#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > yt-formatted-string',
+    ) as HTMLElement)?.innerText || '';
+
+  const artist =
+    (document.querySelector(
+      '#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > span > span.subtitle.style-scope.ytmusic-player-bar > yt-formatted-string > a',
+    ) as HTMLElement)?.innerText || '';
+  return { track, artist };
 }
 
 const paradify = {
-  pageLoad: () => {
+  pageLoad: (): void => {
     chrome.runtime.sendMessage({ type: 'clearBadge' });
 
-    const trackInfo = paradify.getTrackInfo(window.location.href.toLowerCase());
+    const trackInfo = paradify.getTrackInfo();
 
-    if (trackInfo != undefined && trackInfo.success) {
+    if (trackInfo && trackInfo.success) {
       chrome.runtime.sendMessage({ type: 'setBadgeText', data: ' 1 ' });
     }
   },
 
-  getTrackInfo: function (url: string): any {
-    const response: any = {};
-    const pageName: string = getPageName(url);
-    try {
-      const playingResult: any = readNowPlayingText(pageName);
-
-      if (playingResult != null) {
-        response.track = {
-          trackName: playingResult.track,
-          artist: playingResult.artist,
-        };
-        response.success = true;
-      } else {
-        response.success = false;
-        response.errMessage = 'No track info';
-      }
-    } catch (error) {
-      response.success = false;
-      response.errMessage = error.message;
-      consoleLog({ error });
-    }
-
-    response.pageName = pageName;
-
-    return response;
+  getTrackInfo: (): TrackResponseObject => {
+    const pageName: string = getPageName();
+    const track = readNowPlayingText(pageName);
+    const success = track ? true : false;
+    const errMessage = track && 'No track info';
+    return { track, pageName, success, errMessage };
   },
 };
 
-const getSearchTextFromTrackInfo = (trackInfo: any): string => {
+const getSearchTextFromTrackInfo = (
+  trackObject: Partial<TrackObject>,
+): string => {
   let q = '';
-  if (trackInfo) {
+  if (trackObject) {
     q =
-      trackInfo.trackName +
-      ' ' +
-      (trackInfo.artistName ? trackInfo.artistName : '');
+      trackObject.track + ' ' + (trackObject.artist ? trackObject.artist : '');
   }
 
   return q.trim();
@@ -168,4 +169,6 @@ export {
   getRandomDonationGif,
   analyticsHelper,
   consoleLog,
+  isYouTubeVideo,
+  isYouTubeMusic,
 };

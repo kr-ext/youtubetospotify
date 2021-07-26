@@ -11,6 +11,7 @@ import {
   dialogUtils,
   analyticsHelper,
   consoleLog,
+  getRandomSuccessGif,
 } from '../utils';
 
 import {
@@ -20,10 +21,10 @@ import {
   getRefreshUrl,
   getSearchUrl,
 } from '../utils/constants';
-import { Token } from '../interfaces';
+import { Dialog, Token } from '../interfaces';
 import { AudioType, SpotifyOption } from '../enums';
-import './content.css';
 import SearchResult from './dialog/SearchResult';
+import './content.css';
 import audioDoneUrl from '../../audio/done.mp3';
 import audioFailUrl from '../../audio/fail.mp3';
 
@@ -93,10 +94,28 @@ const SpotifyIconInYouTube: FC = () => {
       });
   };
 
-  const openAuth = (): void => {
+  const openAuth = async () => {
     chrome.runtime.sendMessage({
       type: 'openAuthRedirectUrl',
     });
+
+    const token = await storageUtil.waitAndGetFirstLoginResponse();
+    if (token) {
+      const dialog: Dialog = {
+        behavior: { autoHide: true },
+        message: {
+          title: 'Login Successful',
+          text: 'You have logged in successfully',
+          image: { url: getRandomSuccessGif() },
+        },
+      };
+
+      const data = {
+        data: dialog,
+        type: 'showDialog',
+      };
+      chrome.runtime.sendMessage(data);
+    }
   };
 
   const interceptAxios = () => {
@@ -372,7 +391,7 @@ const SpotifyIconInYouTube: FC = () => {
 
   const onClick = () => {
     resetStates();
-    const trackInfo = paradify.getTrackInfo(location.href);
+    const trackInfo = paradify.getTrackInfo();
     const query = getSearchTextFromTrackInfo(trackInfo.track);
     if (query.length === 0) {
       showNoTitle();
