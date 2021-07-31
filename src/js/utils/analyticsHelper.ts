@@ -106,6 +106,18 @@ const searchStarted = (query: string): void => {
   });
 };
 
+const searchNotFound = (query: string): void => {
+  chrome.runtime.sendMessage({
+    type: 'gaSendEvent',
+    data: {
+      pageName: 'YouTube',
+      eventCategory: 'YouTube Video',
+      eventAction: 'Spotify Icon Clicked - Search - Not Found',
+      eventLabel: query,
+    },
+  });
+};
+
 const searchError = (query: string): void => {
   chrome.runtime.sendMessage({
     type: 'gaSendEvent',
@@ -234,6 +246,7 @@ const analyticsHelper = {
   autoSavePlaylistError,
   autoSaveError,
   searchStarted,
+  searchNotFound,
   reSearchStarted,
   searchError,
   reSearchError,

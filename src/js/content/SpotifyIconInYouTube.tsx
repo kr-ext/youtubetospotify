@@ -119,37 +119,80 @@ const SpotifyIconInYouTube: FC = () => {
   };
 
   const interceptAxios = () => {
-    try {
-      const service = new Service(axios);
+    axios.interceptors.request.use(
+      async function (config) {
+        const token: Token = await getSpotifyToken();
+        config.headers['access_token'] = token?.access_token;
+        config.headers['refresh_token'] = token?.refresh_token;
+        config.headers['token_type'] = token?.token_type;
+        return config;
+      },
+      function (error) {
+        analyticsHelper.errorOnInterceptAPI(error.toString());
+        return Promise.reject(error);
+      },
+    );
 
-      service.register({
-        async onRequest(config: any) {
-          const token: Token = await getSpotifyToken();
-          config.headers['access_token'] = token?.access_token;
-          config.headers['refresh_token'] = token?.refresh_token;
-          config.headers['token_type'] = token?.token_type;
-          return config;
-        },
-
-        async onResponse(response: any) {
-          const { data } = response;
-          let d = null;
-          if (typeof data === 'string') d = JSON.parse(data);
-          else d = data;
-
-          if (d.error && d.error.status === 401) {
-            if (d.error.message.indexOf('Invalid access token') > -1) {
-              return openAuth();
-            } else if (d.error.message.indexOf('access token expired') > -1) {
-              return refreshToken(response);
+    // Add a response interceptor
+    axios.interceptors.response.use(
+      async function (response) {
+        const { data } = response;
+        let d = null;
+        if (typeof data === 'string') d = JSON.parse(data);
+        else d = data;
+        if (d.error && d.error.status === 401) {
+          if (
+            d.error.message.indexOf('Invalid access token') > -1 ||
+            d.error.message.indexOf('access token expired') > -1 ||
+            d.error.message.indexOf('No token provided') > -1
+          ) {
+            try {
+              return refreshToken(response).catch((error) => {
+                openAuth();
+                return null;
+              });
+            } catch (error) {
+              openAuth();
+              return null;
             }
-          } else return response;
-        },
-      });
-    } catch (error) {
-      analyticsHelper.errorOnInterceptAPI(error.toString());
-      consoleLog({ error });
-    }
+          } else {
+            return response;
+          }
+        } else return response;
+      },
+      function (error) {
+        analyticsHelper.errorOnInterceptAPI(error.toString());
+        return Promise.reject(error);
+      },
+    );
+    // try {
+    //   const service = new Service(axios);
+    //   service.register({
+    //     async onRequest(config: any) {
+    //       const token: Token = await getSpotifyToken();
+    //       config.headers['access_token'] = token?.access_token;
+    //       config.headers['refresh_token'] = token?.refresh_token;
+    //       config.headers['token_type'] = token?.token_type;
+    //       return config;
+    //     },
+    //     onResponse(response: any) {
+    //       const { data } = response;
+    //       let d = null;
+    //       if (typeof data === 'string') d = JSON.parse(data);
+    //       else d = data;
+    //       if (d.error && d.error.status === 401) {
+    //         if (d.error.message.indexOf('Invalid access token') > -1) {
+    //           return openAuth();
+    //         } else if (d.error.message.indexOf('access token expired') > -1) {
+    //           return refreshToken(response);
+    //         }
+    //       } else return response;
+    //     },
+    //   });
+    // } catch (error) {
+    //   analyticsHelper.errorOnInterceptAPI(error.toString());
+    //   consoleLog({ error });
+    // }
   };
 
   const saved = async (trackIds: string[] = [], playlistUrl: string) => {
@@ -236,10 +279,14 @@ const SpotifyIconInYouTube: FC = () => {
       setQuery(q);
       setShowResultDialog(true);
       analyticsHelper.searchStarted(q);
+
+      if (data.message === 'NOTOK') {
+        analyticsHelper.searchNotFound(q);
+      }
     } catch (error) {
       setIsSaving(false);
       dialogUtils.errorInGeneral();
-      analyticsHelper.searchError(`${q} - ${error.toString}`);
+      analyticsHelper.searchError(`${q} - ${error.toString()}`);
       consoleLog({ error });
     } finally {
       setIsSaving(false);
@@ -256,8 +303,11 @@ const SpotifyIconInYouTube: FC = () => {
       const { data } = response;
       setSearchResult(data);
       analyticsHelper.reSearchStarted(q);
+      if (data.message === 'NOTOK') {
+        analyticsHelper.searchNotFound(q);
+      }
     } catch (error) {
-      analyticsHelper.reSearchError(`${q} - ${error.toString}`);
+      analyticsHelper.reSearchError(`${q} - ${error.toString()}`);
       consoleLog({ error });
     }
   };
@@ -321,9 +371,9 @@ const SpotifyIconInYouTube: FC = () => {
   const searchStarted = async (query: string) => {
     const token = await getSpotifyToken();
     if (token) {
-      search(query);
+      await search(query);
     } else {
-      openAuth();
+      await openAuth();
     }
   };
 
@@ -341,13 +391,13 @@ const SpotifyIconInYouTube: FC = () => {
 
     switch (spotifyOption) {
       case SpotifyOption.AutoSave:
-        autoSaveStarted(query);
+        await autoSaveStarted(query);
         break;
       case SpotifyOption.Search:
-        searchStarted(query);
+        await searchStarted(query);
         break;
       default:
-        openAndSearchInSpotify(query);
+        await openAndSearchInSpotify(query);
         break;
     }
   };
@@ -417,7 +467,9 @@ const SpotifyIconInYouTube: FC = () => {
       <button
         id="paradify"
         className="spotify-button-in-yt-player playerButton ytp-button"
-        onClick={onClick}
+        onClick={() => {
+          onClick();
+        }}
         disabled={isSaving}
         draggable="false"
         title="Add to Spotify"

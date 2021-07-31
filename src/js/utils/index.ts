@@ -103,7 +103,9 @@ const getSearchTextFromTrackInfo = (
 };
 
 const getSpotifySearchUrl = (query: string): string => {
-  return `https://open.spotify.com/search/${encodeURIComponent(query)}`;
+  return `https://open.spotify.com/search/${encodeURIComponent(
+    query,
+  )}?si=bt6xSMatSdSTXt9oCF_O9Q&dl_branch=1`;
 };
 
 const getRandomSuccessGif = (): string => {

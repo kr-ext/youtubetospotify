@@ -212,7 +212,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       eventLabel: '',
     });
   } else if (details.reason == 'update') {
-    storageUtil.setSpotifyIconClickActionOption(SpotifyOption.Search);
     try {
       const deploymentVersion = await storageUtil.getStorage(DEPLOYMENT);
       if (!deploymentVersion || deploymentVersion < DEPLOYMENT_VERSION) {

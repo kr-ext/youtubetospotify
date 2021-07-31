@@ -9,7 +9,7 @@ import {
 } from './constants';
 
 const getStorage = async (key: string): Promise<any> =>
-  new Promise<string>((resolve) => {
+  new Promise<any>((resolve) => {
     chrome.storage.sync.get([key], (data) => {
       resolve(data[key]);
     });
