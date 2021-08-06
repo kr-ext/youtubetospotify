@@ -8,7 +8,12 @@ import {
   URLS,
   ENVIRONMENTS,
 } from './utils/constants';
-import { consoleLog, getRandomSuccessGif, storageUtil } from './utils';
+import {
+  consoleLog,
+  getRandomFailedGif,
+  getRandomSuccessGif,
+  storageUtil,
+} from './utils';
 import { SpotifyOption } from './enums';
 import { Dialog } from './interfaces';
 
@@ -67,6 +72,26 @@ const onTokenCompleted = (token: any) => {
       title: 'Login Successful',
       text: 'You have logged in successfully',
       image: { url: getRandomSuccessGif() },
+    },
+  };
+
+  const data = {
+    data: dialog,
+    type: 'showDialog',
+  };
+
+  sendMessageToRuntime(data);
+};
+
+const onTokenFailed = () => {
+  storageUtil.removeSpotifyToken();
+
+  const dialog: Dialog = {
+    behavior: { autoHide: true },
+    message: {
+      title: 'Login Failed',
+      text: 'Please try again. ',
+      image: { url: getRandomFailedGif() },
     },
   };
 
@@ -153,6 +178,9 @@ const messageListener = (event: any, serder: any, callback: any) => {
       break;
     case 'onTokenCompleted':
       onTokenCompleted(event.data.token);
+      break;
+    case 'onTokenFailed':
+      onTokenFailed();
       break;
     case 'showDialog':
       showDialog(event);

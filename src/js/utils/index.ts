@@ -120,7 +120,6 @@ const getRandomSuccessGif = (): string => {
 
 const getRandomFailedGif = (): string => {
   const images = [
-    'https://media.giphy.com/media/14uQ3cOFteDaU/giphy.gif',
     'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif',
     'https://media.giphy.com/media/l2JehQ2GitHGdVG9y/giphy.gif',
     'https://media.giphy.com/media/3ohs7KViF6rA4aan5u/giphy.gif',
