@@ -1,19 +1,21 @@
-import React, { FC, useEffect, useState } from 'react';
-import { render } from 'react-dom';
-import { SpotifyOption } from '../enums';
-import { Token } from '../interfaces';
-import { dialogUtils, storageUtil } from '../utils';
 import '../../css/index.css';
 import './option.css';
-import paradifyLogo from '../../img/paradify_logo.png';
-import spotifyImageUrl from '../../img/spotify.png';
+
+import { DEPLOYMENT_VERSION, URLS } from '../utils/constants';
+import React, { FC, useEffect, useState } from 'react';
+import { dialogUtils, storageUtil } from '../utils';
+
 import ModalDialogInYouTube from '../content/dialog/ModalDialogInYouTube';
 import ReactGA from 'react-ga';
+import { SpotifyOption } from '../enums';
+import { Token } from '../interfaces';
+import classNames from 'classnames';
+import coffee from '../../img/buy-me-a-coffee.png';
 import { initializeReactGA } from '../utils';
 import launch from '../../img/launch.png';
-import coffee from '../../img/buy-me-a-coffee.png';
-import { DEPLOYMENT_VERSION, URLS } from '../utils/constants';
-import classNames from 'classnames';
+import paradifyLogo from '../../img/paradify_logo.png';
+import { render } from 'react-dom';
+import spotifyImageUrl from '../../img/spotify.png';
 
 const Option: FC = () => {
   const [tokenState, setTokenState] = useState<Token>(null);
@@ -23,6 +25,14 @@ const Option: FC = () => {
     setTempOutlineForDefaultOption,
   ] = useState(false);
 
+  const [isGifDisabled, setIsGifDisabled] = useState<boolean>(false);
+
+  const onGifDisabledChange = async (e: any) => {
+    const checked = e.target.checked;
+    await storageUtil.setGifDisabled(checked);
+    setIsGifDisabled(checked);
+  };
+
   const loadStorageAndUpdateStates = async () => {
     const spotifyTokenData = await storageUtil.getSpotifyToken();
 
@@ -31,14 +41,18 @@ const Option: FC = () => {
     const spotifyOption: string = await storageUtil.getSpotifyOption();
     setSpotifyOptionState(spotifyOption);
 
-    const optionDefaultOutlined: number = await storageUtil.getOptionHighlightedVersion();
-    if (!optionDefaultOutlined || optionDefaultOutlined < DEPLOYMENT_VERSION) {
-      setTempOutlineForDefaultOption(true);
-      setTimeout(() => {
-        setTempOutlineForDefaultOption(false);
-        storageUtil.setOptionHighlightedVersion();
-      }, 12000);
-    }
+    // const optionDefaultOutlined: number = await storageUtil.getOptionHighlightedVersion();
+    // if (!optionDefaultOutlined || optionDefaultOutlined < DEPLOYMENT_VERSION) {
+    //   setTempOutlineForDefaultOption(true);
+    //   setTimeout(() => {
+    //     setTempOutlineForDefaultOption(false);
+    //     storageUtil.setOptionHighlightedVersion();
+    //   }, 12000);
+    // }
+
+    const gifDisabled: boolean = await storageUtil.isGifDisabled();
+
+    setIsGifDisabled(gifDisabled);
   };
 
   const loadWelcomeMessage = async () => {
@@ -293,6 +307,16 @@ const Option: FC = () => {
             </li>
             <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
               <div>{renderSpotifyIconActionClick_Option()}</div>
+            </li>
+            <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
+              Disable Gif Animation
+            </li>
+            <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
+              <input
+                type="checkbox"
+                checked={isGifDisabled ? true : false}
+                onChange={(e) => onGifDisabledChange(e)}
+              />
             </li>
             <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
               <div>Feedback</div>

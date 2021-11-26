@@ -1,21 +1,28 @@
 import React, { FC, useEffect, useState } from 'react';
-import root from 'react-shadow';
-import classNames from 'classnames';
-import paradifyLogo from '../../../img/paradify_logo.png';
-import dialogClose from '../../../img/dialog_close.png';
-import coffee from '../../../img/buy-me-a-coffee.png';
-import { Dialog } from '../../interfaces';
 import { TIMEOUT_MS, URLS } from '../../utils/constants';
+
+import { Dialog } from '../../interfaces';
+import classNames from 'classnames';
+import coffee from '../../../img/buy-me-a-coffee.png';
+import dialogClose from '../../../img/dialog_close.png';
+import paradifyLogo from '../../../img/paradify_logo.png';
+import root from 'react-shadow';
+import storageUtil from '../../utils/storageUtil';
 import style from './dialog.shadowcss';
 
 const ModalDialogInYouTube: FC = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [isGifDisabled, setIsGifDisabled] = useState<boolean>(false);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    chrome.runtime.onMessage.addListener(function (event) {
+    chrome.runtime.onMessage.addListener(async function (event) {
       if (event.type === 'showDialog') {
+        const isGifDisabled: boolean = await storageUtil.isGifDisabled();
+
+        setIsGifDisabled(isGifDisabled);
+
         setDialog(event.data);
         clearTimeout(timeout);
         if (event.data.behavior.autoHide) {
@@ -92,7 +99,7 @@ const ModalDialogInYouTube: FC = () => {
                   </div>
                 </div>
 
-                {dialog.message.image && (
+                {dialog.message.image && isGifDisabled === false && (
                   <div
                     className={classNames(
                       'p-d-paradify-dialog-in-youtube-inner',

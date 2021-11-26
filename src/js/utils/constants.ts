@@ -1,4 +1,4 @@
-import { ENVIRONMENTS, DOMAINS, WEB_SITE_URL } from '../../../utils';
+import { DOMAINS, ENVIRONMENTS, WEB_SITE_URL } from '../../../utils';
 
 const URLS = {
   EXTENSION_NAME: 'Paradify - YouTube To Spotify',
@@ -54,6 +54,7 @@ const DEPLOYMENT = 'DEPLOYMENT';
 const DEPLOYMENT_VERSION = 20210501;
 const EXTENSION_INSTALLED = 'EXTENSION_INSTALLED';
 const OPTION_HIGHLIGHTED = 'OPTION_HIGHLIGHTED';
+const IS_GIF_DISABLED = 'IS_GIF_DISABLED';
 
 export {
   getRedirectAuthUrl,
@@ -76,4 +77,5 @@ export {
   ENVIRONMENTS,
   DOMAINS,
   DONATION_SHOW_SAVED_COUNTS,
+  IS_GIF_DISABLED,
 };

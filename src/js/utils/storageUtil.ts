@@ -1,12 +1,14 @@
-import { Token } from '../interfaces';
 import {
   DEPLOYMENT_VERSION,
   EXTENSION_INSTALLED,
+  IS_GIF_DISABLED,
   OPTION_HIGHLIGHTED,
   SAVED_COUNT,
   SPOTIFY_ICON_CLICK_ACTION_OPTION,
   SPOTIFY_TOKEN,
 } from './constants';
+
+import { Token } from '../interfaces';
 
 const getStorage = async (key: string): Promise<any> =>
   new Promise<any>((resolve) => {
@@ -40,9 +42,16 @@ const getSpotifyOption = async (): Promise<string> =>
 const getOptionHighlightedVersion = async (): Promise<number> =>
   await getStorage(OPTION_HIGHLIGHTED);
 
+const isGifDisabled = async (): Promise<boolean> => {
+  const result = await getStorage(IS_GIF_DISABLED);
+  return result ?? false;
+};
+
 const setOptionHighlightedVersion = async (): Promise<void> => {
   await setStorage(OPTION_HIGHLIGHTED, DEPLOYMENT_VERSION);
 };
+const setGifDisabled = async (value: boolean): Promise<void> =>
+  await setStorage(IS_GIF_DISABLED, value);
 
 const getSavedCount = async (): Promise<number> => {
   try {
@@ -120,6 +129,8 @@ const storageUtil = {
   setIsInstalled,
   getOptionHighlightedVersion,
   setOptionHighlightedVersion,
+  isGifDisabled,
+  setGifDisabled,
 };
 
 export default storageUtil;
