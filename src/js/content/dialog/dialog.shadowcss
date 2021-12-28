@@ -159,15 +159,15 @@
 
 .p-d-donation-container {
   text-align: right;
+  display: flex;
+  justify-content: space-around;
 }
 
-.buy-me-a-coffee {
-  width: 106px;
-  height: auto;
+.p-d-donation-container button {
   opacity: 0.8;
 }
 
-.buy-me-a-coffee:hover {
+.p-d-donation-container button:hover {
   opacity: 1;
 }
 

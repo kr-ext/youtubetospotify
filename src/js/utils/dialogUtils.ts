@@ -5,6 +5,7 @@ import {
   getRandomSuccessGif,
   getSpotifySearchUrl,
 } from '.';
+
 import { Dialog } from '../interfaces';
 
 const hideDialog = (): void => {

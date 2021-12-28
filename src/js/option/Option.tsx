@@ -1,7 +1,6 @@
 import '../../css/index.css';
 import './option.css';
 
-import { DEPLOYMENT_VERSION, URLS } from '../utils/constants';
 import React, { FC, useEffect, useState } from 'react';
 import { dialogUtils, storageUtil } from '../utils';
 
@@ -9,11 +8,13 @@ import ModalDialogInYouTube from '../content/dialog/ModalDialogInYouTube';
 import ReactGA from 'react-ga';
 import { SpotifyOption } from '../enums';
 import { Token } from '../interfaces';
+import { URLS } from '../utils/constants';
 import classNames from 'classnames';
 import coffee from '../../img/buy-me-a-coffee.png';
 import { initializeReactGA } from '../utils';
 import launch from '../../img/launch.png';
 import paradifyLogo from '../../img/paradify_logo.png';
+import rateUs from '../../img/rate-us.png';
 import { render } from 'react-dom';
 import spotifyImageUrl from '../../img/spotify.png';
 
@@ -40,15 +41,6 @@ const Option: FC = () => {
 
     const spotifyOption: string = await storageUtil.getSpotifyOption();
     setSpotifyOptionState(spotifyOption);
-
-    // const optionDefaultOutlined: number = await storageUtil.getOptionHighlightedVersion();
-    // if (!optionDefaultOutlined || optionDefaultOutlined < DEPLOYMENT_VERSION) {
-    //   setTempOutlineForDefaultOption(true);
-    //   setTimeout(() => {
-    //     setTempOutlineForDefaultOption(false);
-    //     storageUtil.setOptionHighlightedVersion();
-    //   }, 12000);
-    // }
 
     const gifDisabled: boolean = await storageUtil.isGifDisabled();
 
@@ -358,10 +350,23 @@ const Option: FC = () => {
                   }}
                 >
                   <div className="flex items-baseline">
-                    <img
-                      src={chrome.runtime.getURL(coffee)}
-                      className="buy-me-a-coffee"
-                    />
+                    <img src={chrome.runtime.getURL(coffee)} />
+                  </div>
+                </button>
+              </div>
+            </li>
+            <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
+              <div>Rate this extension on Chrome Store</div>
+            </li>
+            <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
+              <div>
+                <button
+                  onClick={() => {
+                    window.location.href = URLS.RATE_US;
+                  }}
+                >
+                  <div className="flex items-baseline">
+                    <img src={chrome.runtime.getURL(rateUs)} />
                   </div>
                 </button>
               </div>

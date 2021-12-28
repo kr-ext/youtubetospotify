@@ -3,7 +3,7 @@
   "name": "Paradify - Youtube to Spotify",
   "short_name": "Paradify",
   "description": "The easiest way to get a song from YouTube to Spotify by one-click",
-  "version": "9.1.2",
+  "version": "9.2.0",
   "permissions": ["activeTab", "storage"],
   "content_scripts": [
     {

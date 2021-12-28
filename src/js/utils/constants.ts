@@ -20,6 +20,8 @@ const URLS = {
   REFRESH_PATH: '/refresh-token',
   DONATION_PAYPAL: 'https://www.patreon.com/volkanakin',
   DONATION_BUY_ME_A_COFFEE: 'https://www.buymeacoffee.com/volkanakin',
+  RATE_US:
+    'https://chrome.google.com/webstore/detail/paradify-youtube-to-spoti/bocdilfmhiggklhdifohjfghbdncgele',
 };
 
 const getRedirectAuthUrl = (): string =>

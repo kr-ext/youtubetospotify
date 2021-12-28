@@ -5,7 +5,9 @@ import { Dialog } from '../../interfaces';
 import classNames from 'classnames';
 import coffee from '../../../img/buy-me-a-coffee.png';
 import dialogClose from '../../../img/dialog_close.png';
+import { getRandomNumber } from '../../utils';
 import paradifyLogo from '../../../img/paradify_logo.png';
+import rateUs from '../../../img/rate-us.png';
 import root from 'react-shadow';
 import storageUtil from '../../utils/storageUtil';
 import style from './dialog.shadowcss';
@@ -153,7 +155,7 @@ const ModalDialogInYouTube: FC = () => {
                     </>
                   )}
                 </div>
-                {dialog.showDonation && (
+                {dialog.showDonation && getRandomNumber(5) > 2 && (
                   <div
                     className={classNames('p-d-donation-container', 'p-d-mt-5')}
                   >
@@ -176,10 +178,18 @@ const ModalDialogInYouTube: FC = () => {
                         });
                       }}
                     >
-                      <img
-                        src={chrome.runtime.getURL(coffee)}
-                        className="buy-me-a-coffee"
-                      />
+                      <img src={chrome.runtime.getURL(coffee)} />
+                    </button>
+                    <button
+                      className="p-d-button-donation"
+                      onClick={() => {
+                        chrome.runtime.sendMessage({
+                          type: 'openTab',
+                          data: { url: URLS.RATE_US },
+                        });
+                      }}
+                    >
+                      <img src={chrome.runtime.getURL(rateUs)} />
                     </button>
                   </div>
                 )}

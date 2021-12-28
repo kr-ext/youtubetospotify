@@ -1,19 +1,8 @@
-import React, { FC, useEffect, useState } from 'react';
-import axios from 'axios';
-import { Service } from 'axios-middleware';
-import spotifyImageUrl from '../../img/spotify.png';
-import loading from '../../img/loading_animated.gif';
-import {
-  paradify,
-  getSearchTextFromTrackInfo,
-  getSpotifySearchUrl,
-  storageUtil,
-  dialogUtils,
-  analyticsHelper,
-  consoleLog,
-  getRandomSuccessGif,
-} from '../utils';
+import './content.css';
 
+import { AudioType, SpotifyOption } from '../enums';
+import { Dialog, Token } from '../interfaces';
+import React, { FC, useEffect, useState } from 'react';
 import {
   addTracksFromPlaylist,
   getAddTracksUrl,
@@ -21,12 +10,23 @@ import {
   getRefreshUrl,
   getSearchUrl,
 } from '../utils/constants';
-import { Dialog, Token } from '../interfaces';
-import { AudioType, SpotifyOption } from '../enums';
+import {
+  analyticsHelper,
+  consoleLog,
+  dialogUtils,
+  getRandomSuccessGif,
+  getSearchTextFromTrackInfo,
+  getSpotifySearchUrl,
+  paradify,
+  storageUtil,
+} from '../utils';
+
 import SearchResult from './dialog/SearchResult';
-import './content.css';
 import audioDoneUrl from '../../audio/done.mp3';
 import audioFailUrl from '../../audio/fail.mp3';
+import axios from 'axios';
+import loading from '../../img/loading_animated.gif';
+import spotifyImageUrl from '../../img/spotify.png';
 
 const { getSpotifyToken, getSpotifyOption } = storageUtil;
 
@@ -48,14 +48,12 @@ const SpotifyIconInYouTube: FC = () => {
   const playAudio = (audioType: AudioType) => {
     let audioUrl: string;
 
-    switch (audioType) {
-      case AudioType.SAVED:
-        audioUrl = chrome.runtime.getURL(audioDoneUrl);
-        break;
-      default:
-        audioUrl = chrome.runtime.getURL(audioFailUrl);
-        break;
+    if (audioType === AudioType.SAVED) {
+      audioUrl = chrome.runtime.getURL(audioDoneUrl);
+    } else {
+      audioUrl = chrome.runtime.getURL(audioFailUrl);
     }
+
     const audio = new Audio(audioUrl);
     audio.play();
   };
@@ -165,45 +163,18 @@ const SpotifyIconInYouTube: FC = () => {
         return Promise.reject(error);
       },
     );
-    // try {
-    //   const service = new Service(axios);
-    //   service.register({
-    //     async onRequest(config: any) {
-    //       const token: Token = await getSpotifyToken();
-    //       config.headers['access_token'] = token?.access_token;
-    //       config.headers['refresh_token'] = token?.refresh_token;
-    //       config.headers['token_type'] = token?.token_type;
-    //       return config;
-    //     },
-    //     onResponse(response: any) {
-    //       const { data } = response;
-    //       let d = null;
-    //       if (typeof data === 'string') d = JSON.parse(data);
-    //       else d = data;
-    //       if (d.error && d.error.status === 401) {
-    //         if (d.error.message.indexOf('Invalid access token') > -1) {
-    //           return openAuth();
-    //         } else if (d.error.message.indexOf('access token expired') > -1) {
-    //           return refreshToken(response);
-    //         }
-    //       } else return response;
-    //     },
-    //   });
-    // } catch (error) {
-    //   analyticsHelper.errorOnInterceptAPI(error.toString());
-    //   consoleLog({ error });
-    // }
   };
 
-  const saved = async (trackIds: string[] = [], playlistUrl: string) => {
+  const saved = async (trackIds: string[], playlistUrl: string) => {
     setSearchResult(null);
     let title = '';
     let text = '';
 
-    if (trackIds.length > 0) {
-      const s = trackIds.length > 1 ? 's' : '';
-      title = `${trackIds.length} track${s} added`;
-      text = `${trackIds.length} track${s} added into your Spotify playlist`;
+    if (trackIds && trackIds.length > 0) {
+      const len = trackIds.length;
+      const s = len > 1 ? 's' : '';
+      title = `${len} track${s} added`;
+      text = `${len} track${s} added into your Spotify playlist`;
     }
 
     dialogUtils.saved(title, text, playlistUrl);
@@ -233,12 +204,12 @@ const SpotifyIconInYouTube: FC = () => {
     }
   };
 
-  const addTracks = async (ids: string[], type: string): Promise<any> => {
+  const addTracks = async (idList: string[], type: string): Promise<any> => {
     return new Promise(async (resolve, reject) => {
       try {
         const url = getAddTracksUrl();
         const response = await axios.post(url, {
-          ids,
+          ids: idList,
           type,
         });
 
@@ -397,7 +368,7 @@ const SpotifyIconInYouTube: FC = () => {
         await searchStarted(query);
         break;
       default:
-        await openAndSearchInSpotify(query);
+        openAndSearchInSpotify(query);
         break;
     }
   };
@@ -458,6 +429,8 @@ const SpotifyIconInYouTube: FC = () => {
         addAll(event.data);
       } else if (event.type === 'SpotifyIconClickAction') {
         onClick();
+      } else if (event.type === 'youtubeVideoChanged') {
+        resetStates();
       }
     });
   }, []);
@@ -504,6 +477,7 @@ const SpotifyIconInYouTube: FC = () => {
               setShowResultDialog(false);
             }}
             reSearch={reSearch}
+            query={query}
             filteredQuery={filteredQuery}
             showResultDialog={showResultDialog}
           />

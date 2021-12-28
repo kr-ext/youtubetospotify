@@ -1,12 +1,13 @@
 import '../img/16.png';
 import '../img/48.png';
 import '../img/128.png';
+
 import {
   DEPLOYMENT,
   DEPLOYMENT_VERSION,
-  getRedirectAuthUrl,
-  URLS,
   ENVIRONMENTS,
+  URLS,
+  getRedirectAuthUrl,
 } from './utils/constants';
 import {
   consoleLog,
@@ -14,8 +15,9 @@ import {
   getRandomSuccessGif,
   storageUtil,
 } from './utils';
-import { SpotifyOption } from './enums';
+
 import { Dialog } from './interfaces';
+import { SpotifyOption } from './enums';
 
 const { UNINSTALL_URL } = URLS;
 
@@ -114,8 +116,10 @@ const clearBadge = () => {
   chrome.browserAction.setBadgeText({ text: '' });
 };
 
-const sendMessageToContentScript = (tabId: number, message: any) => {
-  chrome.tabs.sendMessage(tabId, { ...message });
+const sendMessageToContentScript = (message: any) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, { ...message });
+  });
 };
 
 const sendMessageToRuntime = (message: any) => {
@@ -123,15 +127,11 @@ const sendMessageToRuntime = (message: any) => {
 };
 
 const showDialog = (message: any) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    sendMessageToContentScript(tabs[0].id, { ...message, type: 'showDialog' });
-  });
+  sendMessageToContentScript({ ...message, type: 'showDialog' });
 };
 
 const hideDialog = (message: any) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    sendMessageToContentScript(tabs[0].id, { ...message, type: 'hideDialog' });
-  });
+  sendMessageToContentScript({ ...message, type: 'hideDialog' });
 };
 
 const openTab = (url: string) => {
@@ -205,6 +205,9 @@ const messageListener = (event: any, serder: any, callback: any) => {
       break;
     case 'searchResultCannotLoaded':
       gaSendEvent(event.data);
+      break;
+    case 'youtubeVideoChanged':
+      sendMessageToContentScript({ ...event });
       break;
   }
 };

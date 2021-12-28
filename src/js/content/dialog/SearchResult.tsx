@@ -1,18 +1,20 @@
 import React, { FC, useEffect, useState } from 'react';
-import root from 'react-shadow';
-import classNames from 'classnames';
-import paradifyLogo from '../../../img/paradify_logo.png';
-import dialogClose from '../../../img/dialog_close.png';
+
 import { ReactComponent as AddButtonSvg } from '../../../img/round-add-button.svg';
-import style from './searchResultDialog.shadowcss';
-import { URLS } from '../../utils/constants';
 import AudioPlayer from './AudioPlayer';
+import { URLS } from '../../utils/constants';
+import classNames from 'classnames';
+import dialogClose from '../../../img/dialog_close.png';
+import paradifyLogo from '../../../img/paradify_logo.png';
+import root from 'react-shadow';
+import style from './searchResultDialog.shadowcss';
 
 interface Props {
   result: any;
   addTrack(ids: string[], type: string): Promise<any>;
   close(): void;
   reSearch(q: string): void;
+  query: string;
   filteredQuery: string;
   showResultDialog: boolean;
 }
@@ -22,6 +24,7 @@ const SearchResult: FC<Props> = (props: Props) => {
     addTrack,
     close,
     reSearch,
+    query,
     filteredQuery,
     showResultDialog,
   } = props;
@@ -61,7 +64,7 @@ const SearchResult: FC<Props> = (props: Props) => {
     if (!filteredQuery) return;
     const list = filteredQuery.split(' ');
     if (list) {
-      setSelectedQueryList(list);
+      setSelectedQueryList((item) => [...item, ...list]);
     }
   }, []);
 
@@ -74,12 +77,14 @@ const SearchResult: FC<Props> = (props: Props) => {
   const renderFilter = () => {
     return (
       <div className="text-gray-400 mb-2">
-        {filteredQuery ? (
+        {query ? (
           <>
             <div className="text-base">
               <span className="px-3 text-gray-200">filter:</span>
-              {filteredQuery.split(' ').map((q: string, i: number) => {
-                const selected = selectedQueryList.find((item) => item === q);
+              {query.split(' ').map((q: string, i: number) => {
+                const selected: boolean = selectedQueryList.some(
+                  (item: string) => item.toLowerCase() === q.toLowerCase(),
+                );
 
                 return (
                   <button
@@ -101,11 +106,12 @@ const SearchResult: FC<Props> = (props: Props) => {
                         tempSelectedQueryList.push(q);
                       }
                       setSelectedQueryList(tempSelectedQueryList);
+
                       reSearchStart(tempSelectedQueryList);
                     }}
                     title="de-select this to filter"
                   >
-                    {q}
+                    {q.toLowerCase()}
                   </button>
                 );
               })}

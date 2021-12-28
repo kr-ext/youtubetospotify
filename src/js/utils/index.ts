@@ -1,9 +1,10 @@
-import contentUtil from './contentUtil';
-import storageUtil from './storageUtil';
-import dialogUtils from './dialogUtils';
-import analyticsHelper from './analyticsHelper';
-import { ENVIRONMENTS } from './constants';
 import { TrackObject, TrackResponseObject } from '../interfaces';
+
+import { ENVIRONMENTS } from './constants';
+import analyticsHelper from './analyticsHelper';
+import contentUtil from './contentUtil';
+import dialogUtils from './dialogUtils';
+import storageUtil from './storageUtil';
 
 const initializeReactGA = (ReactGA: any, pageName: string) => {
   if (process.env.NODE_ENV !== ENVIRONMENTS.PRODUCTION) return;
@@ -155,6 +156,9 @@ const getRandomDonationGif = (): string => {
   return images[index];
 };
 
+const getRandomNumber = (end: number): number =>
+  Math.floor(Math.random() * end);
+
 export {
   initializeReactGA,
   getSearchTextFromTrackInfo,
@@ -172,4 +176,5 @@ export {
   consoleLog,
   isYouTubeVideo,
   isYouTubeMusic,
+  getRandomNumber,
 };

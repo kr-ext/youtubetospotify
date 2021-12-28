@@ -1,14 +1,15 @@
-import React from 'react';
-import { render } from 'react-dom';
+import {
+  consoleLog,
+  contentUtil,
+  isYouTubeMusic,
+  isYouTubeVideo,
+  paradify,
+} from '../utils';
+
 import App from './App';
 import ModalDialogInYouTube from './dialog/ModalDialogInYouTube';
-import {
-  paradify,
-  contentUtil,
-  consoleLog,
-  isYouTubeVideo,
-  isYouTubeMusic,
-} from '../utils';
+import React from 'react';
+import { render } from 'react-dom';
 
 let countTryOfSpotifyIconInject = 1;
 const injectTryCount = 10;
@@ -315,21 +316,6 @@ function recommendedVideosMutationStart(targetNode: any) {
   globalObserver.observe(targetNode, config);
 }
 
-// function addIconOnRecommendedVideos() {
-//   let tried = 0;
-//   const contents = setInterval(function () {
-//     const targetNode = document.querySelector(
-//       'ytd-watch-next-secondary-results-renderer > #items > ytd-item-section-renderer > #contents',
-//     );
-
-//     if (targetNode !== null || tried >= 15) {
-//       clearInterval(contents);
-//       recommendedVideosMutationStart(targetNode);
-//     }
-//     tried++;
-//   }, 100);
-// }
-
 const onLoad = () => {
   paradify.pageLoad();
 
@@ -339,8 +325,10 @@ const onLoad = () => {
     //when the title is changed
     contentUtil.youTubeTitle(() => {
       loadInjection();
+      chrome.runtime.sendMessage({
+        type: 'youtubeVideoChanged',
+      });
     });
-    // addIconOnRecommendedVideos();
   }, 1000);
 };
 
