@@ -9,17 +9,13 @@ import {
   URLS,
   getRedirectAuthUrl,
 } from './utils/constants';
-import {
-  consoleLog,
-  getRandomFailedGif,
-  getRandomSuccessGif,
-  storageUtil,
-} from './utils';
+import { consoleLog, dialogUtils, storageUtil } from './utils';
 
-import { Dialog } from './interfaces';
 import { SpotifyOption } from './enums';
+import { Token } from './interfaces';
 
 const { UNINSTALL_URL } = URLS;
+const { createDialogLoginSuccessfull, createDialogLoginFailed } = dialogUtils;
 
 const gaSendEvent = (data: any) => {
   if (process.env.NODE_ENV !== ENVIRONMENTS.PRODUCTION) return;
@@ -55,7 +51,7 @@ const gaSendEvent = (data: any) => {
   // eslint-disable-next-line no-undef
   ga('set', 'anonymizeIp', true);
   // eslint-disable-next-line no-undef
-  ga('set', 'checkProtocolTask', function () {});
+  ga('set', 'checkProtocolTask', () => {});
   // eslint-disable-next-line no-undef
   ga('send', {
     hitType: 'event',
@@ -65,20 +61,11 @@ const gaSendEvent = (data: any) => {
   });
 };
 
-const onTokenCompleted = (token: any) => {
+const onTokenCompleted = (token: Token) => {
   storageUtil.setSpotifyToken(token);
 
-  const dialog: Dialog = {
-    behavior: { autoHide: true },
-    message: {
-      title: 'Login Successful',
-      text: 'You have logged in successfully',
-      image: { url: getRandomSuccessGif() },
-    },
-  };
-
   const data = {
-    data: dialog,
+    data: createDialogLoginSuccessfull(),
     type: 'showDialog',
   };
 
@@ -88,17 +75,8 @@ const onTokenCompleted = (token: any) => {
 const onTokenFailed = () => {
   storageUtil.removeSpotifyToken();
 
-  const dialog: Dialog = {
-    behavior: { autoHide: true },
-    message: {
-      title: 'Login Failed',
-      text: 'Please try again. ',
-      image: { url: getRandomFailedGif() },
-    },
-  };
-
   const data = {
-    data: dialog,
+    data: createDialogLoginFailed(),
     type: 'showDialog',
   };
 
@@ -117,7 +95,7 @@ const clearBadge = () => {
 };
 
 const sendMessageToContentScript = (message: any) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     chrome.tabs.sendMessage(tabs[0].id, { ...message });
   });
 };
@@ -158,7 +136,7 @@ const openAuthRedirectUrl = () => {
 };
 
 const dialogAddAll = (data: any) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     chrome.tabs.sendMessage(tabs[0].id, { data: data, type: 'dialogAddAll' });
   });
 };
@@ -212,17 +190,15 @@ const messageListener = (event: any, serder: any, callback: any) => {
   }
 };
 
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   messageListener(message, sender, sendResponse);
 });
 
-chrome.runtime.onMessageExternal.addListener(function (
-  message,
-  sender,
-  sendResponse,
-) {
-  messageListener(message, sender, sendResponse);
-});
+chrome.runtime.onMessageExternal.addListener(
+  (message, sender, sendResponse) => {
+    messageListener(message, sender, sendResponse);
+  },
+);
 
 chrome.runtime.setUninstallURL(UNINSTALL_URL);
 
@@ -263,13 +239,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 const spotifyIconClickAction = () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs.length > 0)
       chrome.tabs.sendMessage(tabs[0].id, { type: 'SpotifyIconClickAction' });
   });
 };
 
-chrome.commands.onCommand.addListener(function (command) {
+chrome.commands.onCommand.addListener((command) => {
   if (command === 'add-to-spotify') {
     spotifyIconClickAction();
   }

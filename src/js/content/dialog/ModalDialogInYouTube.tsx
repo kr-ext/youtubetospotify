@@ -19,7 +19,7 @@ const ModalDialogInYouTube: FC = () => {
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    chrome.runtime.onMessage.addListener(async function (event) {
+    chrome.runtime.onMessage.addListener(async (event) => {
       if (event.type === 'showDialog') {
         const isGifDisabled: boolean = await storageUtil.isGifDisabled();
 
@@ -68,9 +68,10 @@ const ModalDialogInYouTube: FC = () => {
 
   return (
     <>
-      <root.div className="quote">
-        <style type="text/css">{style}</style>
-        {showDialog && (
+      {showDialog && (
+        <root.div className="quote">
+          <style type="text/css">{style}</style>
+
           <div
             className={classNames(
               { 'p-d-paradify-dialog-in-youtube-show': showDialog },
@@ -196,8 +197,8 @@ const ModalDialogInYouTube: FC = () => {
               </>
             )}
           </div>
-        )}
-      </root.div>
+        </root.div>
+      )}
     </>
   );
 };

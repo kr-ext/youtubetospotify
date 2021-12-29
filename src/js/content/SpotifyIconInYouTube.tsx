@@ -118,14 +118,14 @@ const SpotifyIconInYouTube: FC = () => {
 
   const interceptAxios = () => {
     axios.interceptors.request.use(
-      async function (config) {
+      async (config) => {
         const token: Token = await getSpotifyToken();
         config.headers['access_token'] = token?.access_token;
         config.headers['refresh_token'] = token?.refresh_token;
         config.headers['token_type'] = token?.token_type;
         return config;
       },
-      function (error) {
+      (error) => {
         analyticsHelper.errorOnInterceptAPI(error.toString());
         return Promise.reject(error);
       },
@@ -133,16 +133,16 @@ const SpotifyIconInYouTube: FC = () => {
 
     // Add a response interceptor
     axios.interceptors.response.use(
-      async function (response) {
+      async (response) => {
         const { data } = response;
         let d = null;
         if (typeof data === 'string') d = JSON.parse(data);
         else d = data;
         if (d.error && d.error.status === 401) {
           if (
-            d.error.message.indexOf('Invalid access token') > -1 ||
-            d.error.message.indexOf('access token expired') > -1 ||
-            d.error.message.indexOf('No token provided') > -1
+            d.error.message.includes('Invalid access token') ||
+            d.error.message.includes('access token expired') ||
+            d.error.message.includes('No token provided')
           ) {
             try {
               return refreshToken(response).catch((error) => {
@@ -158,7 +158,7 @@ const SpotifyIconInYouTube: FC = () => {
           }
         } else return response;
       },
-      function (error) {
+      (error) => {
         analyticsHelper.errorOnInterceptAPI(error.toString());
         return Promise.reject(error);
       },
@@ -424,7 +424,7 @@ const SpotifyIconInYouTube: FC = () => {
 
   useEffect(() => {
     interceptAxios();
-    chrome.runtime.onMessage.addListener(function (event) {
+    chrome.runtime.onMessage.addListener((event) => {
       if (event.type === 'dialogAddAll') {
         addAll(event.data);
       } else if (event.type === 'SpotifyIconClickAction') {
@@ -468,20 +468,18 @@ const SpotifyIconInYouTube: FC = () => {
         </div>
       </button>
       <div id="paradify-search-result-container">
-        {showResultDialog && (
-          <SearchResult
-            result={searchResult}
-            addTrack={addTracks}
-            close={() => {
-              setSearchResult(null);
-              setShowResultDialog(false);
-            }}
-            reSearch={reSearch}
-            query={query}
-            filteredQuery={filteredQuery}
-            showResultDialog={showResultDialog}
-          />
-        )}
+        <SearchResult
+          result={searchResult}
+          addTrack={addTracks}
+          close={() => {
+            setSearchResult(null);
+            setShowResultDialog(false);
+          }}
+          reSearch={reSearch}
+          query={query}
+          filteredQuery={filteredQuery}
+          showResultDialog={showResultDialog}
+        />
       </div>
     </>
   );

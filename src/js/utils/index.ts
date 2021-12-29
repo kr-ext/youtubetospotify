@@ -21,11 +21,11 @@ const initializeReactGA = (ReactGA: any, pageName: string) => {
 };
 
 const isYouTubeVideo = (): boolean =>
-  window.location.href.indexOf('youtube.com/watch') > -1 &&
-  window.location.href.indexOf('music.youtube.com') === -1;
+  window.location.href.includes('youtube.com/watch') &&
+  !window.location.href.includes('music.youtube.com');
 
 const isYouTubeMusic = (): boolean =>
-  window.location.href.indexOf('music.youtube.com/watch') > -1;
+  window.location.href.includes('music.youtube.com/watch');
 
 const consoleLog = (data: any): void => {
   console.log('%c----------------Paradify----------------', 'color:green');
@@ -33,7 +33,7 @@ const consoleLog = (data: any): void => {
   console.log('%c----------------Paradify----------------', 'color:green');
 };
 
-function getPageName(): string {
+const getPageName = (): string => {
   let pageName = '';
   if (isYouTubeVideo()) {
     pageName = 'youtube';
@@ -41,9 +41,9 @@ function getPageName(): string {
     pageName = 'youtubemusic';
   }
   return pageName;
-}
+};
 
-function readNowPlayingText(pageName: string): TrackObject {
+const readNowPlayingText = (pageName: string): TrackObject => {
   if (pageName === 'youtube') {
     return readYoutube();
   } else if (pageName === 'youtubemusic') {
@@ -51,14 +51,14 @@ function readNowPlayingText(pageName: string): TrackObject {
   } else {
     return null;
   }
-}
+};
 
-function readYoutube(): TrackObject {
+const readYoutube = (): TrackObject => {
   const track = document.title.trim().replace(' - YouTube', '');
   return { track, artist: null };
-}
+};
 
-function readYoutubeMusic(): TrackObject {
+const readYoutubeMusic = (): TrackObject => {
   const track =
     (document.querySelector(
       '#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > yt-formatted-string',
@@ -69,7 +69,7 @@ function readYoutubeMusic(): TrackObject {
       '#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > span > span.subtitle.style-scope.ytmusic-player-bar > yt-formatted-string > a',
     ) as HTMLElement)?.innerText || '';
   return { track, artist };
-}
+};
 
 const paradify = {
   pageLoad: (): void => {

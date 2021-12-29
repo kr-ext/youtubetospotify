@@ -10,14 +10,14 @@ import {
 
 import { Token } from '../interfaces';
 
-const getStorage = async (key: string): Promise<any> =>
-  new Promise<any>((resolve) => {
+const getStorage = async (key: string): Promise<unknown> =>
+  new Promise<unknown>((resolve) => {
     chrome.storage.sync.get([key], (data) => {
       resolve(data[key]);
     });
   });
 
-const setStorage = (key: string, value: any) => {
+const setStorage = (key: string, value: unknown): void => {
   new Promise<void>((resolve) => {
     chrome.storage.sync.set({ [key]: value }, () => {
       resolve();
@@ -26,36 +26,31 @@ const setStorage = (key: string, value: any) => {
 };
 
 const getSpotifyToken = async (): Promise<Token> =>
-  await getStorage(SPOTIFY_TOKEN);
-// new Promise<Token>((resolve) => {
-//   chrome.storage.sync.get([SPOTIFY_TOKEN], (data) => {
-//     resolve(data[SPOTIFY_TOKEN]);
-//   });
-// });
+  getStorage(SPOTIFY_TOKEN) as Promise<Token>;
 
 const setSpotifyToken = async (token: Token): Promise<void> =>
-  await setStorage(SPOTIFY_TOKEN, token);
+  setStorage(SPOTIFY_TOKEN, token);
 
 const getSpotifyOption = async (): Promise<string> =>
-  await getStorage(SPOTIFY_ICON_CLICK_ACTION_OPTION);
+  getStorage(SPOTIFY_ICON_CLICK_ACTION_OPTION) as Promise<string>;
 
 const getOptionHighlightedVersion = async (): Promise<number> =>
-  await getStorage(OPTION_HIGHLIGHTED);
+  getStorage(OPTION_HIGHLIGHTED) as Promise<number>;
 
 const isGifDisabled = async (): Promise<boolean> => {
-  const result = await getStorage(IS_GIF_DISABLED);
+  const result = (await getStorage(IS_GIF_DISABLED)) as Promise<boolean>;
   return result ?? false;
 };
 
 const setOptionHighlightedVersion = async (): Promise<void> => {
-  await setStorage(OPTION_HIGHLIGHTED, DEPLOYMENT_VERSION);
+  setStorage(OPTION_HIGHLIGHTED, DEPLOYMENT_VERSION);
 };
 const setGifDisabled = async (value: boolean): Promise<void> =>
-  await setStorage(IS_GIF_DISABLED, value);
+  setStorage(IS_GIF_DISABLED, value);
 
 const getSavedCount = async (): Promise<number> => {
   try {
-    const count = await getStorage(SAVED_COUNT);
+    const count = (await getStorage(SAVED_COUNT)) as Promise<number>;
 
     return count ?? 0;
   } catch {
@@ -64,18 +59,20 @@ const getSavedCount = async (): Promise<number> => {
 };
 
 const isInstalled = async (): Promise<boolean> => {
-  const installedInfo: string = await getStorage(EXTENSION_INSTALLED);
+  const installedInfo: string = (await getStorage(
+    EXTENSION_INSTALLED,
+  )) as string;
   return installedInfo ? true : false;
 };
 const setIsInstalled = async (): Promise<void> =>
-  await setStorage(EXTENSION_INSTALLED, 1);
+  setStorage(EXTENSION_INSTALLED, 1);
 
 const setSpotifyIconClickActionOption = async (option: string): Promise<void> =>
-  await setStorage(SPOTIFY_ICON_CLICK_ACTION_OPTION, option);
+  setStorage(SPOTIFY_ICON_CLICK_ACTION_OPTION, option);
 
 const increaseSavedCount = async (): Promise<void> => {
-  let count = await getSavedCount();
-  await setStorage(SAVED_COUNT, ++count);
+  const count: number = await getSavedCount();
+  setStorage(SAVED_COUNT, count + 1);
 };
 
 const removeStorage = (key: string) => {
@@ -87,13 +84,13 @@ const removeStorage = (key: string) => {
 };
 
 const removeSpotifyToken = async (): Promise<void> =>
-  await removeStorage(SPOTIFY_TOKEN);
+  removeStorage(SPOTIFY_TOKEN);
 
 const removeSpotifyOption = async (): Promise<void> =>
-  await removeStorage(SPOTIFY_ICON_CLICK_ACTION_OPTION);
+  removeStorage(SPOTIFY_ICON_CLICK_ACTION_OPTION);
 
-const waitAndGetFirstLoginResponse = async () => {
-  let token;
+const waitAndGetFirstLoginResponse = async (): Promise<Token | null> => {
+  let token: Token | null;
 
   for (let i = 0; i < 10; i++) {
     token = await new Promise<Token | null>((resolve) => {

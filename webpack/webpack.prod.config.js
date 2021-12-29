@@ -3,12 +3,10 @@ const common = require('./webpack.common.config');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-var options = {
+
+const options = {
   mode: 'production',
 
-  output: {
-    filename: '[name].bundle.js',
-  },
   plugins: [
     new CopyPlugin({
       patterns: [
@@ -29,17 +27,7 @@ var options = {
     new CleanWebpackPlugin(),
   ],
   optimization: {
-    minimizer: [
-      new OptimizeCSSAssetsPlugin({}),
-      //new OptimizeCSSAssetsPlugin({
-      //   assetNameRegExp: /\.css$/g,
-      //   cssProcessor: require('cssnano'),
-      //   cssProcessorPluginOptions: {
-      //     preset: ['default', { discardComments: { removeAll: true } }],
-      //   },
-      //   canPrint: true,
-      //}),
-    ],
+    minimizer: [new OptimizeCSSAssetsPlugin({})],
   },
 };
 

@@ -165,8 +165,8 @@ const Option: FC = () => {
           </div>
           <div>
             <p className="mt-2 text-gray-700">
-              Paradify shows a search result. So, you can choose which tracks to
-              add.
+              Search result is shown in pop-out window. So, you can choose which
+              tracks to add in your playlist.
             </p>
           </div>
         </div>
@@ -221,11 +221,6 @@ const Option: FC = () => {
             <p className="mt-2 text-sm text-gray-700">
               Paradify opens {'"Spotify Web Player"'} to search. Does not add
               the tracks on behalf of you.
-            </p>
-            <p className="text-xs text-gray-600">
-              PS: Spotify does NOT allow neither you nor Paradify to open
-              Spotify apllication on your computer. This option only opens
-              Spotify Web Player
             </p>
           </div>
         </div>
@@ -339,21 +334,39 @@ const Option: FC = () => {
             </li>
             <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
               <div>
-                <button
-                  onClick={() => {
-                    window.location.href = URLS.DONATION_BUY_ME_A_COFFEE;
-                    ReactGA.event({
-                      category: 'Options',
-                      action: 'Buy Me a Coffe Clicked',
-                      label: '',
-                    });
-                  }}
-                >
-                  <div className="flex items-baseline">
-                    <img src={chrome.runtime.getURL(coffee)} />
-                  </div>
-                </button>
+                <a href="https://www.buymeacoffee.com/volkanakin">
+                  <img
+                    src={`https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=volkanakin&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff`}
+                  />
+                </a>
               </div>
+            </li>
+            <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t"></li>
+            <li className="w-full sm:w-2/3 py-5 border-dotted border-b border-t">
+              <form
+                action="https://www.paypal.com/donate"
+                method="post"
+                target="_top"
+              >
+                <input
+                  type="hidden"
+                  name="hosted_button_id"
+                  value="SRXKQM5P7B3H8"
+                />
+                <input
+                  type="image"
+                  src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif"
+                  name="submit"
+                  title="PayPal - The safer, easier way to pay online!"
+                  alt="Donate with PayPal button"
+                />
+                <img
+                  alt=""
+                  src="https://www.paypal.com/en_NL/i/scr/pixel.gif"
+                  width="1"
+                  height="1"
+                />
+              </form>
             </li>
             <li className="w-full sm:w-1/3 py-5 border-dotted border-b border-t">
               <div>Rate this extension on Chrome Store</div>
@@ -373,10 +386,9 @@ const Option: FC = () => {
             </li>
           </ul>
           <div className="text-center text-xs ">
-            <a href="https://www.paradify.com">paradify.com</a>
-            <br />
-            <br />
-            <a href="http://www.youtube2spotify.com">youtube2spotify.com</a>
+            <a href="https://www.paradify.com?ref=extension-options-page">
+              paradify.com
+            </a>
           </div>
         </div>
       </div>

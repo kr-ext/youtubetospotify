@@ -130,6 +130,29 @@ const welcome = (): void => {
   });
 };
 
+const createDialogLoginSuccessfull = (): Dialog => {
+  const dialog: Dialog = {
+    behavior: { autoHide: true },
+    message: {
+      title: 'Login Successful',
+      text: 'You have logged in successfully',
+      image: { url: getRandomSuccessGif() },
+    },
+  };
+  return dialog;
+};
+const createDialogLoginFailed = (): Dialog => {
+  const dialog: Dialog = {
+    behavior: { autoHide: true },
+    message: {
+      title: 'Login Failed',
+      text: 'Please try again. ',
+      image: { url: getRandomFailedGif() },
+    },
+  };
+  return dialog;
+};
+
 const dialogUtils = {
   hideDialog,
   errorInGeneral,
@@ -138,5 +161,8 @@ const dialogUtils = {
   saved,
   notSaved,
   welcome,
+  createDialogLoginSuccessfull,
+  createDialogLoginFailed,
 };
+
 export default dialogUtils;

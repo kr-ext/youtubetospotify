@@ -5,12 +5,12 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const WriteFilePlugin = require('write-file-webpack-plugin');
 
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
-//   .BundleAnalyzerPlugin;
+const publicPath = '/';
 
 const output = {
-  filename: '[name].js',
+  filename: '[name].bundle.js',
   path: path.join(__dirname, '..', 'dist'),
+  publicPath,
 };
 
 const config = {

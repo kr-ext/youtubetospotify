@@ -18,6 +18,7 @@ interface Props {
   filteredQuery: string;
   showResultDialog: boolean;
 }
+
 const SearchResult: FC<Props> = (props: Props) => {
   const {
     result: result,
@@ -28,6 +29,7 @@ const SearchResult: FC<Props> = (props: Props) => {
     filteredQuery,
     showResultDialog,
   } = props;
+
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [selectedQueryList, setSelectedQueryList] = useState<string[]>([]);
 
@@ -216,9 +218,11 @@ const SearchResult: FC<Props> = (props: Props) => {
         <div
           className={classNames(
             {
-              'p-d-paradify-search-result-in-youtube-show transition-all duration-500 ease-in-out': showResultDialog,
+              'p-d-paradify-search-result-in-youtube-show transition-all duration-700 ease-in-out': showResultDialog,
             },
-            { 'p-d-paradify-search-result-in-youtube-hide': !showResultDialog },
+            {
+              'p-d-paradify-search-result-in-youtube-hide': !showResultDialog,
+            },
           )}
         >
           {showResultDialog && (

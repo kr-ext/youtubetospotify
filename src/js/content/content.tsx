@@ -260,62 +260,6 @@ const loadInjection = () => {
   injectDialogWindow();
 };
 
-function recommendedVideosMutationStart(targetNode: any) {
-  // Your code here...
-
-  if (!targetNode) {
-    consoleLog({ message: 'no target node found' });
-    return;
-  }
-
-  let globalObserver = null;
-  const config = { attributes: false, subtree: false, childList: true };
-  const callback = (mutationList: any) => {
-    for (const mutation of mutationList) {
-      mutation.addedNodes.forEach((node: any) => {
-        const title = node.querySelector('#video-title');
-
-        const thumbnail = node.querySelector('ytd-thumbnail');
-        if (thumbnail) {
-          const div = document.createElement('div');
-          // const img = document.createElement('img');
-          // img.src =
-          //   'chrome-extension://khpifnkcammomhfjcpomgmgamgpkepdo/media/spotify.png';
-          // img.style.width = '20px';
-          // img.style.height = '20px';
-          div.className = 'paradify-small-icon-container';
-          // div.appendChild(img);
-          thumbnail.appendChild(div);
-          render(<App />, div);
-
-          // node.addEventListener(
-          //   'mouseover',
-          //   function (event) {
-          //     div.style.display = 'block';
-          //   },
-          //   false,
-          // );
-          // node.addEventListener(
-          //   'mouseleave',
-          //   function (event) {
-          //     div.style.display = 'none';
-          //   },
-          //   false,
-          // );
-        } else {
-          consoleLog({ message: 'no thumbnail found => ', title });
-        }
-      });
-
-      // globalObserver.disconnect();
-      // break;
-    }
-  };
-
-  globalObserver = new MutationObserver(callback);
-  globalObserver.observe(targetNode, config);
-}
-
 const onLoad = () => {
   paradify.pageLoad();
 
